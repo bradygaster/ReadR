@@ -131,7 +131,7 @@ else
             StateHasChanged();
 
             var allEntries = await FeedParser.ParseAllFeedsAsync();
-            feedEntries = allEntries.Take(20).ToList();
+            feedEntries = allEntries.Take(8).ToList();
         }
         catch (Exception)
         {
