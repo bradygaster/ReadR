@@ -10,18 +10,19 @@ public class StaticFeedSource : IFeedSource
         "https://devblogs.microsoft.com/visualstudio/feed/",
         
         // Community Blogs - .NET MVPs and Experts
-        "https://scotthanselman.com/blog/SyndicationService.asmx/GetRss",
-        "https://www.hanselman.com/blog/CategoryView.aspx?category=.NET&format=RSS",
+        "https://www.hanselman.com/blog/feed/rss",
         "https://ardalis.com/feed.xml",
         "https://blog.jetbrains.com/dotnet/feed/",
         "https://www.meziantou.net/feed.xml",
         "https://andrewlock.net/rss.xml",
         "https://www.strathweb.com/feed/",
         "https://blog.stephencleary.com/feeds/posts/default",
+        "https://davidpine.net/index.xml",
+        "https://www.kallemarjokorpi.fi/rss/",
+        "https://nikiforovall.github.io/feed.xml",
         
         // .NET Foundation and Community
         "https://dotnetfoundation.org/blog/feed",
-        "https://www.nuget.org/api/v2/curated-feeds/microsoftdotnet/Packages",
         
         // Popular .NET Bloggers
         "https://khalidabuhakmeh.com/feed.xml",
@@ -34,10 +35,12 @@ public class StaticFeedSource : IFeedSource
         // Aspire and Cloud Native
         "https://techcommunity.microsoft.com/plugins/custom/microsoft/o365/custom-blog-rss?board=AppModernization",
         "https://azure.microsoft.com/en-us/blog/feed/",
+        "https://aspireify.net/rss",
         
         // YouTube Channels (RSS)
         "https://www.youtube.com/feeds/videos.xml?channel_id=UCvtT19MZW8dq5Wwfu6B0oxw", // .NET
         "https://www.youtube.com/feeds/videos.xml?channel_id=UC-ptWR16ITQyYOglXyQmpzw", // Microsoft Developer
+        "https://www.youtube.com/feeds/videos.xml?playlist_id=PLdo4fOcmZ0oUaQPBuCHVscl4OC7E6EMTn", // Aspire Fridays
     };
 
     public Task<List<string>> GetFeedUrlsAsync()

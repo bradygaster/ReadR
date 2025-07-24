@@ -8,41 +8,6 @@ public class FaviconService : IFaviconService
     private readonly HttpClient _httpClient;
     private readonly ILogger<FaviconService> _logger;
     private readonly ConcurrentDictionary<string, string?> _faviconCache = new();
-    
-    // Known favicon mappings for popular sites
-    private readonly Dictionary<string, string> _knownFavicons = new()
-    {
-        // Microsoft sites
-        { "devblogs.microsoft.com", "https://devblogs.microsoft.com/favicon.ico" },
-        { "docs.microsoft.com", "https://docs.microsoft.com/favicon.ico" },
-        { "azure.microsoft.com", "https://azure.microsoft.com/favicon.ico" },
-        { "techcommunity.microsoft.com", "https://techcommunity.microsoft.com/favicon.ico" },
-        
-        // Popular dev blogs
-        { "scotthanselman.com", "https://scotthanselman.com/favicon.ico" },
-        { "hanselman.com", "https://hanselman.com/favicon.ico" },
-        { "ardalis.com", "https://ardalis.com/favicon.ico" },
-        { "andrewlock.net", "https://andrewlock.net/favicon.ico" },
-        { "strathweb.com", "https://strathweb.com/favicon.ico" },
-        { "khalidabuhakmeh.com", "https://khalidabuhakmeh.com/favicon.ico" },
-        { "code-maze.com", "https://code-maze.com/favicon.ico" },
-        { "jimmybogard.com", "https://jimmybogard.com/favicon.ico" },
-        { "exceptionnotfound.net", "https://exceptionnotfound.net/favicon.ico" },
-        { "meziantou.net", "https://meziantou.net/favicon.ico" },
-        
-        // Tech companies
-        { "blog.jetbrains.com", "https://blog.jetbrains.com/favicon.ico" },
-        { "stackoverflow.blog", "https://stackoverflow.blog/favicon.ico" },
-        { "github.blog", "https://github.blog/favicon.ico" },
-        
-        // .NET Foundation
-        { "dotnetfoundation.org", "https://dotnetfoundation.org/favicon.ico" },
-        { "nuget.org", "https://nuget.org/favicon.ico" },
-        
-        // YouTube (will be handled separately)
-        { "youtube.com", "🎥" },
-        { "youtu.be", "🎥" }
-    };
 
     private readonly Dictionary<string, string> _fallbackIcons = new()
     {
@@ -103,13 +68,6 @@ public class FaviconService : IFaviconService
             // Check cache first
             if (_faviconCache.TryGetValue(domain, out var cachedFavicon))
                 return cachedFavicon;
-
-            // Check known favicons
-            if (_knownFavicons.TryGetValue(domain, out var knownFavicon))
-            {
-                _faviconCache[domain] = knownFavicon;
-                return knownFavicon;
-            }
 
             // Try to fetch favicon
             var faviconUrl = await FetchFaviconAsync(domain);
