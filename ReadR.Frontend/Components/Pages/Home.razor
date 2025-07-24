@@ -6,6 +6,7 @@
 @using Microsoft.JSInterop
 @inject IFeedParser FeedParser
 @inject IJSRuntime JSRuntime
+@implements IDisposable
 @rendermode @(new InteractiveServerRenderMode())
 
 <PageTitle>Latest Posts - ReadR</PageTitle>
@@ -152,6 +153,7 @@ else
     private string? errorMessage;
     private int currentPage = 0;
     private const int entriesPerPage = 9;
+    private DotNetObjectReference<Home>? objRef;
 
     private int totalPages => feedEntries?.Count > 0 ? (int)Math.Ceiling((double)feedEntries.Count / entriesPerPage) : 0;
     private List<FeedEntry> CurrentPageEntries => feedEntries?
@@ -162,6 +164,34 @@ else
     protected override async Task OnInitializedAsync()
     {
         await LoadFeeds();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            objRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("setupKeyboardNavigation", objRef);
+        }
+    }
+
+    [JSInvokable]
+    public void HandleKeyPress(string key)
+    {
+        switch (key)
+        {
+            case "ArrowLeft":
+                PreviousPage();
+                break;
+            case "ArrowRight":
+                NextPage();
+                break;
+        }
+    }
+
+    public void Dispose()
+    {
+        objRef?.Dispose();
     }
 
     private async Task LoadFeeds()
@@ -266,6 +296,34 @@ else
 }
 
 <script>
+    let keyboardNavigationSetup = false;
+    let homeComponentRef = null;
+
+    window.setupKeyboardNavigation = function(dotNetObjectReference) {
+        homeComponentRef = dotNetObjectReference;
+        
+        if (!keyboardNavigationSetup) {
+            document.addEventListener('keydown', handleKeyDown);
+            keyboardNavigationSetup = true;
+        }
+    };
+
+    function handleKeyDown(event) {
+        // Only handle arrow keys if no input elements are focused
+        if (document.activeElement.tagName === 'INPUT' || 
+            document.activeElement.tagName === 'TEXTAREA' || 
+            document.activeElement.contentEditable === 'true') {
+            return;
+        }
+
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+            event.preventDefault();
+            if (homeComponentRef) {
+                homeComponentRef.invokeMethodAsync('HandleKeyPress', event.key);
+            }
+        }
+    }
+
     window.handleFaviconError = function(img) {
         const domain = img.dataset.domain;
         const fallbackIcon = img.dataset.fallbackIcon || '🌐';
