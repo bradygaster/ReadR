@@ -10,4 +10,10 @@
         <PackageReference Include="System.ServiceModel.Syndication" Version="8.0.0" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="Data\feed-urls.txt">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
 </Project>

@@ -20,6 +20,11 @@ public class FeedParser : IFeedParser
 
     public async Task<List<FeedEntry>> ParseFeedAsync(string feedUrl)
     {
+        return await ParseFeedAsync(feedUrl, null);
+    }
+
+    public async Task<List<FeedEntry>> ParseFeedAsync(string feedUrl, string? sourceCategory)
+    {
         var entries = new List<FeedEntry>();
 
         try
@@ -47,6 +52,7 @@ public class FeedParser : IFeedParser
                     Author = GetAuthor(item),
                     FeedSource = feedTitle,
                     Categories = item.Categories.Select(c => c.Name).ToList(),
+                    SourceCategory = sourceCategory
                 };
 
                 // Get favicon information using static helper
@@ -67,9 +73,18 @@ public class FeedParser : IFeedParser
     public async Task<List<FeedEntry>> ParseAllFeedsAsync()
     {
         var allEntries = new List<FeedEntry>();
-        var feedUrls = await _feedSource.GetFeedUrlsAsync();
+        var categorizedFeeds = await _feedSource.GetCategorizedFeedsAsync();
 
-        var tasks = feedUrls.Select(ParseFeedAsync);
+        var tasks = new List<Task<List<FeedEntry>>>();
+
+        foreach (var category in categorizedFeeds.Categories)
+        {
+            foreach (var feedUrl in category.FeedUrls)
+            {
+                tasks.Add(ParseFeedAsync(feedUrl, category.Name));
+            }
+        }
+
         var results = await Task.WhenAll(tasks);
 
         foreach (var entries in results)
@@ -79,6 +94,15 @@ public class FeedParser : IFeedParser
 
         // Sort by publish date, newest first
         return allEntries.OrderByDescending(e => e.PublishDate).ToList();
+    }
+
+    public async Task<Dictionary<string, List<FeedEntry>>> ParseAllFeedsByCategoryAsync()
+    {
+        var allEntries = await ParseAllFeedsAsync();
+        
+        return allEntries
+            .GroupBy(entry => entry.SourceCategory ?? "Uncategorized")
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(e => e.PublishDate).ToList());
     }
 
     private static string GetDescription(SyndicationItem item)

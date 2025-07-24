@@ -11,4 +11,5 @@ public class FeedEntry
     public string? FaviconUrl { get; set; }
     public string? FallbackIcon { get; set; }
     public List<string> Categories { get; set; } = new();
+    public string? SourceCategory { get; set; }
 }
