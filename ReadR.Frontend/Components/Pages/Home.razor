@@ -47,12 +47,12 @@
             </div>
         </div>
 
-        <div class="row g-4">
+        <div class="row g-4 equal-height-cards">
             @foreach (var entry in feedEntries)
             {
                 <div class="col-md-6 col-lg-4">
-                    <div class="card h-100 shadow-sm feed-card">
-                        <div class="card-body d-flex flex-column">
+                    <div class="card shadow-sm feed-card">
+                        <div class="card-body">
                             <h6 class="card-title mb-3">
                                 <a href="@entry.Link" target="_blank" class="text-decoration-none text-dark fw-bold stretched-link">
                                     @entry.Title
@@ -61,7 +61,7 @@
 
                             @if (!string.IsNullOrEmpty(entry.Description))
                             {
-                                <p class="card-text text-muted small mb-3 flex-grow-1">
+                                <p class="card-text text-muted small mb-3">
                                     @(TruncateDescription(entry.Description, 120))
                                 </p>
                             }
@@ -87,20 +87,6 @@
                                         <i class="bi bi-globe me-1"></i>
                                         @entry.FeedSource
                                     </small>
-
-                                    @if (entry.Categories?.Any() == true)
-                                    {
-                                        <div class="d-flex flex-wrap gap-1">
-                                            @foreach (var category in entry.Categories.Take(2))
-                                            {
-                                                <span class="badge bg-secondary">@category</span>
-                                            }
-                                            @if (entry.Categories.Count > 2)
-                                            {
-                                                <span class="badge bg-light text-dark">+@(entry.Categories.Count - 2)</span>
-                                            }
-                                        </div>
-                                    }
                                 </div>
                             </div>
                         </div>
