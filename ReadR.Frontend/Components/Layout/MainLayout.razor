@@ -1,23 +1,48 @@
-﻿@inherits LayoutComponentBase
+﻿@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Components
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+<div class="app-container">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-icon">📖</span>
+                <span class="logo-text">ReadR</span>
+            </div>
         </div>
+        
+        <nav class="sidebar-nav">
+            <a href="/" class="nav-item @(IsActive("/") ? "active" : "")">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-text">Home</span>
+            </a>
+        </nav>
+    </aside>
 
-        <article class="content px-4">
+    <main class="main-content">
+        <div class="content-wrapper">
             @Body
-        </article>
+        </div>
     </main>
 </div>
 
 <div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
+    <span class="error-icon">⚠️</span>
+    <span class="error-message">An unhandled error has occurred.</span>
+    <button class="error-action" onclick="location.reload()">Reload</button>
+    <button class="error-dismiss" onclick="document.getElementById('blazor-error-ui').style.display='none'">×</button>
 </div>
+
+@code {
+    private bool IsActive(string path)
+    {
+        var currentPath = new Uri(Navigation.Uri).AbsolutePath;
+        if (path == "/" && currentPath == "/")
+            return true;
+        if (path != "/" && currentPath.StartsWith(path, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+}

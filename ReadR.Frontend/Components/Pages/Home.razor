@@ -1,111 +1,116 @@
 ﻿@page "/"
 @using ReadR.Frontend.Services
 @using ReadR.Frontend.Models
+@using Microsoft.AspNetCore.Components.Web
 @inject IFeedParser FeedParser
-@attribute [StreamRendering]
+@rendermode InteractiveServer
 
-<PageTitle>ReadR - Latest Posts</PageTitle>
+<PageTitle>Latest Posts - ReadR</PageTitle>
 
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col">
-            <h1 class="display-4 text-primary mb-2">ReadR</h1>
-            <p class="lead text-muted">Latest posts from the .NET community</p>
-        </div>
+<div class="page-header">
+    <div class="header-content">
+        <h1 class="page-title">Latest Posts</h1>
+        <p class="page-subtitle">Stay up to date with the .NET community</p>
     </div>
-
-    @if (isLoading)
+    @if (feedEntries?.Any() == true)
     {
-        <div class="row">
-            <div class="col text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-3 text-muted">Fetching the latest posts...</p>
-            </div>
-        </div>
-    }
-    else if (errorMessage != null)
-    {
-        <div class="row">
-            <div class="col">
-                <div class="alert alert-warning" role="alert">
-                    <h4 class="alert-heading">Oops!</h4>
-                    <p class="mb-0">@errorMessage</p>
-                </div>
-            </div>
-        </div>
-    }
-    else if (feedEntries?.Any() == true)
-    {
-        <div class="row mb-3">
-            <div class="col">
-                <h5 class="text-muted">
-                    <i class="bi bi-rss-fill me-2"></i>
-                    Latest Posts (@feedEntries.Count)
-                </h5>
-            </div>
-        </div>
-
-        <div class="row g-4 equal-height-cards">
-            @foreach (var entry in feedEntries)
-            {
-                <div class="col-md-6 col-lg-4">
-                    <div class="card shadow-sm feed-card">
-                        <div class="card-body">
-                            <h6 class="card-title mb-3">
-                                <a href="@entry.Link" target="_blank" class="text-decoration-none text-dark fw-bold stretched-link">
-                                    @entry.Title
-                                </a>
-                            </h6>
-
-                            @if (!string.IsNullOrEmpty(entry.Description))
-                            {
-                                <p class="card-text text-muted small mb-3">
-                                    @(TruncateDescription(entry.Description, 120))
-                                </p>
-                            }
-
-                            <div class="mt-auto">
-                                <div class="d-flex flex-wrap align-items-center gap-2 small text-muted mb-2">
-                                    <span>
-                                        <i class="bi bi-calendar3 me-1"></i>
-                                        @entry.PublishDate.ToString("MMM dd")
-                                    </span>
-
-                                    @if (!string.IsNullOrEmpty(entry.Author))
-                                    {
-                                        <span>
-                                            <i class="bi bi-person me-1"></i>
-                                            @entry.Author
-                                        </span>
-                                    }
-                                </div>
-
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">
-                                        <i class="bi bi-globe me-1"></i>
-                                        @entry.FeedSource
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-    }
-    else
-    {
-        <div class="row">
-            <div class="col text-center py-5">
-                <i class="bi bi-rss display-1 text-muted"></i>
-                <h4 class="mt-3 text-muted">No posts found</h4>
-                <p class="text-muted">Check back later for the latest updates from the .NET community.</p>
+        <div class="header-stats">
+            <div class="stat-item">
+                <span class="stat-number">@feedEntries.Count</span>
+                <span class="stat-label">Articles</span>
             </div>
         </div>
     }
 </div>
+
+@if (isLoading)
+{
+    <div class="loading-container">
+        <div class="loading-content">
+            <div class="spinner-border"></div>
+            <h3 class="loading-title">Fetching latest posts</h3>
+            <p class="loading-subtitle">This won't take long...</p>
+        </div>
+    </div>
+}
+else if (errorMessage != null)
+{
+    <div class="error-container">
+        <div class="alert alert-error">
+            <div class="alert-header">
+                <span class="alert-icon">⚠️</span>
+                <h4 class="alert-title">Something went wrong</h4>
+            </div>
+            <p class="alert-message">@errorMessage</p>
+            <button class="btn btn-secondary" @onclick="RetryLoad">
+                <span>🔄</span>
+                Try Again
+            </button>
+        </div>
+    </div>
+}
+else if (feedEntries?.Any() == true)
+{
+    <div class="feeds-grid">
+        @foreach (var entry in feedEntries)
+        {
+            <article class="feed-card">
+                <div class="card-body">
+                    <h3 class="card-title">
+                        <a href="@entry.Link" target="_blank" rel="noopener noreferrer">
+                            @entry.Title
+                        </a>
+                    </h3>
+
+                    @if (!string.IsNullOrEmpty(entry.Description))
+                    {
+                        <p class="card-text">
+                            @(TruncateDescription(entry.Description, 150))
+                        </p>
+                    }
+
+                    <div class="card-footer">
+                        <div class="card-meta">
+                            <div class="card-meta-item">
+                                <span class="meta-icon">📅</span>
+                                <span class="meta-text">@entry.PublishDate.ToString("MMM dd, yyyy")</span>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(entry.Author))
+                            {
+                                <div class="card-meta-item">
+                                    <span class="meta-icon">👤</span>
+                                    <span class="meta-text">@entry.Author</span>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="feed-source">
+                            <span class="source-icon">🌐</span>
+                            <span class="source-text">@entry.FeedSource</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+}
+else
+{
+    <div class="empty-state">
+        <div class="empty-content">
+            <div class="empty-icon">📚</div>
+            <h3 class="empty-title">No posts found</h3>
+            <p class="empty-subtitle">
+                Check back later for the latest updates from the .NET community.
+            </p>
+            <button class="btn btn-primary" @onclick="RetryLoad">
+                <span>🔄</span>
+                Refresh
+            </button>
+        </div>
+    </div>
+}
 
 @code {
     private List<FeedEntry>? feedEntries;
@@ -114,19 +119,34 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadFeeds();
+    }
+
+    private async Task LoadFeeds()
+    {
         try
         {
+            isLoading = true;
+            errorMessage = null;
+            StateHasChanged();
+
             var allEntries = await FeedParser.ParseAllFeedsAsync();
             feedEntries = allEntries.Take(20).ToList();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            errorMessage = "Unable to load feeds at this time. Please try again later.";
+            errorMessage = "Unable to load feeds at this time. Please check your connection and try again.";
         }
         finally
         {
             isLoading = false;
+            StateHasChanged();
         }
+    }
+
+    private async Task RetryLoad()
+    {
+        await LoadFeeds();
     }
 
     private static string TruncateDescription(string description, int maxLength)
