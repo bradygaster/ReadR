@@ -49,6 +49,10 @@ public class FeedParser : IFeedParser
                     Categories = item.Categories.Select(c => c.Name).ToList(),
                 };
 
+                // Get favicon information using static helper
+                entry.FaviconUrl = ReadR.Frontend.Services.FaviconHelper.GetKnownFaviconUrl(feedUrl);
+                entry.FallbackIcon = ReadR.Frontend.Services.FaviconHelper.GetFallbackIcon(feedTitle);
+
                 entries.Add(entry);
             }
         }
@@ -500,6 +504,29 @@ public class FeedParser : IFeedParser
         catch
         {
             return "Unknown Source";
+        }
+    }
+
+    private static string? GetSiteUrlFromFeed(SyndicationFeed feed)
+    {
+        // Try to get the main site URL from feed links
+        var link = feed.Links.FirstOrDefault(l => l.RelationshipType == "alternate" || string.IsNullOrEmpty(l.RelationshipType));
+        return link?.Uri.ToString();
+    }
+
+    private static string? GetSiteUrlFromEntry(FeedEntry entry)
+    {
+        if (string.IsNullOrEmpty(entry.Link))
+            return null;
+
+        try
+        {
+            var uri = new Uri(entry.Link);
+            return $"{uri.Scheme}://{uri.Host}";
+        }
+        catch
+        {
+            return null;
         }
     }
 }

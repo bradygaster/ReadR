@@ -1,9 +1,12 @@
 ﻿@page "/"
 @using ReadR.Frontend.Services
 @using ReadR.Frontend.Models
+@using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
 @inject IFeedParser FeedParser
-@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
+@rendermode @(new InteractiveServerRenderMode())
 
 <PageTitle>Latest Posts - ReadR</PageTitle>
 
@@ -16,8 +19,8 @@
     {
         <div class="header-stats">
             <div class="stat-item">
-                <span class="stat-number">@feedEntries.Count</span>
-                <span class="stat-label">Articles</span>
+                <span class="stat-number">Page @(currentPage + 1) of @totalPages</span>
+                <span class="stat-label">@feedEntries.Count Articles</span>
             </div>
         </div>
     }
@@ -49,50 +52,78 @@ else if (errorMessage != null)
         </div>
     </div>
 }
-else if (feedEntries?.Any() == true)
+else if (feedEntries?.Any() == true && CurrentPageEntries.Any())
 {
-    <div class="feeds-grid">
-        @foreach (var entry in feedEntries)
-        {
-            <article class="feed-card">
-                <div class="card-body">
-                    <h3 class="card-title">
-                        <a href="@entry.Link" target="_blank" rel="noopener noreferrer">
-                            @entry.Title
-                        </a>
-                    </h3>
+    <div class="navigation-container">
+        <div class="navigation-header">
+            <button class="btn btn-secondary nav-btn" @onclick="PreviousPage" disabled="@(currentPage == 0)">
+                <span>⬅️</span>
+                Previous
+            </button>
+            
+            <div class="entry-counter">
+                <span class="current-entry">@(currentPage + 1)</span>
+                <span class="separator">of</span>
+                <span class="total-entries">@totalPages</span>
+                <span class="page-label">Pages</span>
+            </div>
+            
+            <button class="btn btn-secondary nav-btn" @onclick="NextPage" disabled="@(currentPage >= totalPages - 1)">
+                Next
+                <span>➡️</span>
+            </button>
+        </div>
 
-                    @if (!string.IsNullOrEmpty(entry.Description))
-                    {
-                        <p class="card-text">
-                            @(TruncateDescription(entry.Description, 150))
-                        </p>
-                    }
+        <div class="feeds-grid">
+            @foreach (var entry in CurrentPageEntries)
+            {
+                <article class="feed-card">
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <a href="@entry.Link" target="_blank" rel="noopener noreferrer">
+                                @entry.Title
+                            </a>
+                        </h3>
 
-                    <div class="card-footer">
-                        <div class="card-meta">
-                            <div class="card-meta-item">
-                                <span class="meta-icon">📅</span>
-                                <span class="meta-text">@entry.PublishDate.ToString("MMM dd, yyyy")</span>
+                        @if (!string.IsNullOrEmpty(entry.Description))
+                        {
+                            <p class="card-text">
+                                @(TruncateDescription(entry.Description, 150))
+                            </p>
+                        }
+
+                        <div class="card-footer">
+                            <div class="source-tag">
+                                @if (!string.IsNullOrEmpty(entry.FaviconUrl))
+                                {
+                                    <img src="@entry.FaviconUrl" 
+                                         alt="Site icon" 
+                                         class="site-favicon" 
+                                         onerror="tryFallbackFavicon(this, '@ExtractDomain(entry.Link)', '@(!string.IsNullOrEmpty(entry.FallbackIcon) ? entry.FallbackIcon : "🌐")');" />
+                                    <span class="site-icon" style="display: none;">@(!string.IsNullOrEmpty(entry.FallbackIcon) ? entry.FallbackIcon : "🌐")</span>
+                                }
+                                else if (!string.IsNullOrEmpty(entry.FallbackIcon))
+                                {
+                                    <span class="site-icon">@entry.FallbackIcon</span>
+                                }
+                                else
+                                {
+                                    <span class="site-icon">🌐</span>
+                                }
+                                <span>@entry.FeedSource</span>
+                                @if (IsYouTubeEntry(entry))
+                                {
+                                    <span class="platform-label">YouTube</span>
+                                }
                             </div>
-
-                            @if (!string.IsNullOrEmpty(entry.Author))
-                            {
-                                <div class="card-meta-item">
-                                    <span class="meta-icon">👤</span>
-                                    <span class="meta-text">@entry.Author</span>
-                                </div>
-                            }
-                        </div>
-
-                        <div class="feed-source">
-                            <span class="source-icon">🌐</span>
-                            <span class="source-text">@entry.FeedSource</span>
+                            <div class="card-meta-line">
+                                <span class="publish-date">@entry.PublishDate.ToString("MMM dd, yyyy")</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </article>
-        }
+                </article>
+            }
+        </div>
     </div>
 }
 else
@@ -116,6 +147,14 @@ else
     private List<FeedEntry>? feedEntries;
     private bool isLoading = true;
     private string? errorMessage;
+    private int currentPage = 0;
+    private const int entriesPerPage = 9;
+
+    private int totalPages => feedEntries?.Count > 0 ? (int)Math.Ceiling((double)feedEntries.Count / entriesPerPage) : 0;
+    private List<FeedEntry> CurrentPageEntries => feedEntries?
+        .Skip(currentPage * entriesPerPage)
+        .Take(entriesPerPage)
+        .ToList() ?? new List<FeedEntry>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -131,7 +170,8 @@ else
             StateHasChanged();
 
             var allEntries = await FeedParser.ParseAllFeedsAsync();
-            feedEntries = allEntries.Take(8).ToList();
+            feedEntries = allEntries.ToList();
+            currentPage = 0; // Reset to first page
         }
         catch (Exception)
         {
@@ -147,6 +187,24 @@ else
     private async Task RetryLoad()
     {
         await LoadFeeds();
+    }
+
+    private void NextPage()
+    {
+        if (currentPage < totalPages - 1)
+        {
+            currentPage++;
+            StateHasChanged();
+        }
+    }
+
+    private void PreviousPage()
+    {
+        if (currentPage > 0)
+        {
+            currentPage--;
+            StateHasChanged();
+        }
     }
 
     private static string TruncateDescription(string description, int maxLength)
@@ -167,5 +225,39 @@ else
             truncated = truncated.Substring(0, lastSpace);
 
         return truncated + "...";
+    }
+
+    private static bool IsYouTubeEntry(FeedEntry entry)
+    {
+        // Check if the link contains YouTube domains
+        if (!string.IsNullOrEmpty(entry.Link))
+        {
+            return entry.Link.Contains("youtube.com", StringComparison.OrdinalIgnoreCase) ||
+                   entry.Link.Contains("youtu.be", StringComparison.OrdinalIgnoreCase);
+        }
+        
+        return false;
+    }
+
+    private static string ExtractDomain(string url)
+    {
+        if (string.IsNullOrEmpty(url))
+            return "";
+
+        try
+        {
+            var uri = new Uri(url);
+            var host = uri.Host.ToLowerInvariant();
+            
+            // Remove www. prefix
+            if (host.StartsWith("www."))
+                host = host[4..];
+                
+            return host;
+        }
+        catch
+        {
+            return "";
+        }
     }
 }

@@ -1,4 +1,3 @@
-using ReadR.Frontend.Components;
 using ReadR.Frontend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +11,7 @@ builder.Services.AddHttpClient();
 // Register feed source service
 builder.Services.AddSingleton<IFeedSource, StaticFeedSource>();
 
-// Register feed parser service
+// Register feed parser service  
 builder.Services.AddScoped<IFeedParser, FeedParser>();
 
 var app = builder.Build();
@@ -26,7 +25,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAntiforgery();
 app.MapStaticAssets();
-app.MapRazorComponents<App>()
+app.MapRazorComponents<ReadR.Frontend.Components.App>()
    .AddInteractiveServerRenderMode();
 
 app.Run();

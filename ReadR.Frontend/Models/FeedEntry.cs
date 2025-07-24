@@ -8,5 +8,7 @@ public class FeedEntry
     public DateTime PublishDate { get; set; }
     public string Author { get; set; } = string.Empty;
     public string FeedSource { get; set; } = string.Empty;
+    public string? FaviconUrl { get; set; }
+    public string? FallbackIcon { get; set; }
     public List<string> Categories { get; set; } = new();
 }
