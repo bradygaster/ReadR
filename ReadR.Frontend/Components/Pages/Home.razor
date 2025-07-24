@@ -78,6 +78,10 @@ else if (feedEntries?.Any() == true && CurrentPageEntries.Any())
             @foreach (var entry in CurrentPageEntries)
             {
                 <article class="feed-card">
+                    <div class="date-tag">
+                        <span class="date-month">@entry.PublishDate.ToString("MMM")</span>
+                        <span class="date-day">@entry.PublishDate.Day</span>
+                    </div>
                     <div class="card-body">
                         <h3 class="card-title">
                             <a href="@entry.Link" target="_blank" rel="noopener noreferrer">
@@ -99,7 +103,9 @@ else if (feedEntries?.Any() == true && CurrentPageEntries.Any())
                                     <img src="@entry.FaviconUrl" 
                                          alt="Site icon" 
                                          class="site-favicon" 
-                                         onerror="tryFallbackFavicon(this, '@ExtractDomain(entry.Link)', '@(!string.IsNullOrEmpty(entry.FallbackIcon) ? entry.FallbackIcon : "🌐")');" />
+                                         data-domain="@ExtractDomain(entry.Link)"
+                                         data-fallback-icon="@(!string.IsNullOrEmpty(entry.FallbackIcon) ? entry.FallbackIcon : "🌐")"
+                                         onerror="handleFaviconError(this);" />
                                     <span class="site-icon" style="display: none;">@(!string.IsNullOrEmpty(entry.FallbackIcon) ? entry.FallbackIcon : "🌐")</span>
                                 }
                                 else if (!string.IsNullOrEmpty(entry.FallbackIcon))
@@ -115,9 +121,6 @@ else if (feedEntries?.Any() == true && CurrentPageEntries.Any())
                                 {
                                     <span class="platform-label">YouTube</span>
                                 }
-                            </div>
-                            <div class="card-meta-line">
-                                <span class="publish-date">@entry.PublishDate.ToString("MMM dd, yyyy")</span>
                             </div>
                         </div>
                     </div>
@@ -261,3 +264,60 @@ else
         }
     }
 }
+
+<script>
+    window.handleFaviconError = function(img) {
+        const domain = img.dataset.domain;
+        const fallbackIcon = img.dataset.fallbackIcon || '🌐';
+        
+        // Track what we've already tried to avoid infinite loops
+        const triedUrls = img.dataset.tried ? img.dataset.tried.split(',') : [];
+        const currentSrc = img.src;
+        
+        if (!triedUrls.includes(currentSrc)) {
+            triedUrls.push(currentSrc);
+            img.dataset.tried = triedUrls.join(',');
+        }
+        
+        // Define fallback URLs in order of preference
+        const fallbackUrls = [
+            `https://${domain}/apple-touch-icon.png`,
+            `https://${domain}/apple-touch-icon-180x180.png`,
+            `https://${domain}/favicon.png`,
+            `https://${domain}/favicon-32x32.png`,
+            `https://${domain}/assets/favicon.ico`,
+            `https://${domain}/images/favicon.ico`,
+            `https://${domain}/img/favicon.ico`,
+            `https://www.google.com/s2/favicons?domain=${domain}&sz=32`
+        ];
+        
+        // Find the next untried URL
+        let nextUrl = null;
+        for (const url of fallbackUrls) {
+            if (!triedUrls.includes(url)) {
+                nextUrl = url;
+                break;
+            }
+        }
+        
+        if (nextUrl) {
+            // Try the next fallback URL
+            img.src = nextUrl;
+        } else {
+            // All image fallbacks failed, switch to emoji icon
+            img.style.display = 'none';
+            const emojiSpan = img.nextElementSibling;
+            if (emojiSpan && emojiSpan.classList.contains('site-icon')) {
+                emojiSpan.style.display = 'inline';
+            }
+        }
+    };
+    
+    // Preload Google's favicon service for better performance
+    window.addEventListener('DOMContentLoaded', function() {
+        const link = document.createElement('link');
+        link.rel = 'dns-prefetch';
+        link.href = '//www.google.com';
+        document.head.appendChild(link);
+    });
+</script>

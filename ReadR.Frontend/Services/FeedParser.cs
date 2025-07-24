@@ -50,8 +50,8 @@ public class FeedParser : IFeedParser
                 };
 
                 // Get favicon information using static helper
-                entry.FaviconUrl = ReadR.Frontend.Services.FaviconHelper.GetKnownFaviconUrl(feedUrl);
-                entry.FallbackIcon = ReadR.Frontend.Services.FaviconHelper.GetFallbackIcon(feedTitle);
+                entry.FaviconUrl = FaviconHelper.GetOptimalFaviconUrl(feedUrl);
+                entry.FallbackIcon = FaviconHelper.GetFallbackIcon(feedTitle);
 
                 entries.Add(entry);
             }
