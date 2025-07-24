@@ -40,7 +40,12 @@ public class StaticFeedSource : IFeedSource
         // YouTube Channels (RSS)
         "https://www.youtube.com/feeds/videos.xml?channel_id=UCvtT19MZW8dq5Wwfu6B0oxw", // .NET
         "https://www.youtube.com/feeds/videos.xml?channel_id=UC-ptWR16ITQyYOglXyQmpzw", // Microsoft Developer
-        "https://www.youtube.com/feeds/videos.xml?playlist_id=PLdo4fOcmZ0oUaQPBuCHVscl4OC7E6EMTn", // Aspire Fridays
+        "https://www.youtube.com/feeds/videos.xml?playlist_id=PLdo4fOcmZ0oUaQPBuCHVscl4OC7E6EMTn", // Aspire Fridays,
+
+        // GitHub Feeds
+        "https://github.com/dotnet/aspire/discussions.atom", // Aspire discussions
+        "https://github.com/dotnet/aspire/releases.atom", // Aspire releases
+
     };
 
     public Task<List<string>> GetFeedUrlsAsync()
