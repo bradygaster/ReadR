@@ -61,7 +61,19 @@ public class FeedCacheService : IFeedCacheService
 
         if (!string.IsNullOrEmpty(feedUrl))
         {
-            var decodedFeedUrl = Uri.UnescapeDataString(feedUrl);
+            string decodedFeedUrl;
+            try
+            {
+                // Try base64 decoding first (new approach)
+                var bytes = Convert.FromBase64String(feedUrl);
+                decodedFeedUrl = System.Text.Encoding.UTF8.GetString(bytes);
+            }
+            catch
+            {
+                // Fallback to URL decoding (old approach)
+                decodedFeedUrl = Uri.UnescapeDataString(feedUrl);
+            }
+            
             entries = entries.Where(e => e.FeedUrl == decodedFeedUrl).ToList();
         }
         else if (!string.IsNullOrEmpty(categoryName))

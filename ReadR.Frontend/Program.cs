@@ -38,16 +38,3 @@ app.MapStaticAssets();
 app.MapRazorComponents<ReadR.Frontend.Components.App>().AddInteractiveServerRenderMode();
 
 app.Run();
-
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
-app.UseAntiforgery();
-app.MapStaticAssets();
-app.MapRazorComponents<ReadR.Frontend.Components.App>().AddInteractiveServerRenderMode();
-
-app.Run();
