@@ -69,6 +69,26 @@ public class HomePageService : IHomePageService
         }
     }
 
+    public async Task<HomeViewModel> GetHomeViewModelBySlugAsync(
+        string? categoryName = null,
+        string? feedSlug = null,
+        int page = 0
+    )
+    {
+        // Convert slug to feed URL if provided
+        string? feedUrl = null;
+        if (!string.IsNullOrWhiteSpace(feedSlug))
+        {
+            feedUrl = await _feedCacheService.GetFeedUrlFromSlugAsync(feedSlug);
+            if (feedUrl == null)
+            {
+                _logger.LogWarning("Could not resolve feed slug: {Slug}", feedSlug);
+            }
+        }
+
+        return await GetHomeViewModelAsync(categoryName, feedUrl, page);
+    }
+
     public async Task RefreshDataAsync()
     {
         _logger.LogInformation("Refreshing feed data");

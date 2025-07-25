@@ -11,4 +11,5 @@ public interface IFeedCacheService
         string? feedUrl = null
     );
     Task<CategorizedFeeds> GetWorkingFeedsAsync();
+    Task<string?> GetFeedUrlFromSlugAsync(string slug);
 }

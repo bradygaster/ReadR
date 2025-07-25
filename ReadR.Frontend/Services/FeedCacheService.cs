@@ -99,6 +99,25 @@ public class FeedCacheService : IFeedCacheService
         return cachedData.WorkingFeeds;
     }
 
+    public async Task<string?> GetFeedUrlFromSlugAsync(string slug)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+            return null;
+
+        var cachedData = await GetCachedFeedsAsync();
+        
+        // Search through all feed metadata to find the one with matching slug
+        foreach (var kvp in cachedData.FeedMetadata)
+        {
+            if (kvp.Value.GetSlug() == slug)
+            {
+                return kvp.Key; // The key is the original feed URL
+            }
+        }
+
+        return null;
+    }
+
     private async Task<CachedFeedData> LoadAndCacheFeedsAsync()
     {
         try

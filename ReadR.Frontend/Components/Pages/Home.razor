@@ -1,6 +1,6 @@
 ﻿@page "/"
 @page "/category/{CategoryName}"
-@page "/feed/{FeedUrl}"
+@page "/feed/{FeedSlug}"
 @inject IHomePageService HomePageService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
@@ -54,9 +54,10 @@
                             @foreach (var feedUrl in category.FeedUrls)
                             {
                                 var feedName = GetFeedDisplayName(feedUrl);
+                                var feedSlug = GetFeedSlug(feedUrl);
                                 <div class="nav-item nav-feed-item">
-                                    <a class="nav-link feed-link @GetActiveClass($"/feed/{Uri.EscapeDataString(feedUrl)}")" 
-                                       href="@($"/feed/{Uri.EscapeDataString(feedUrl)}")"
+                                    <a class="nav-link feed-link @GetActiveClass($"/feed/{feedSlug}")" 
+                                       href="@($"/feed/{feedSlug}")"
                                        @onclick="@(() => HandleNavigation(null, feedUrl))" @onclick:preventDefault="true">
                                         <span class="feed-icon">📄</span>
                                         @feedName
@@ -221,7 +222,7 @@
 
 @code {
     [Parameter] public string? CategoryName { get; set; }
-    [Parameter] public string? FeedUrl { get; set; }
+    [Parameter] public string? FeedSlug { get; set; }
     
     private HomeViewModel viewModel = new();
     private DotNetObjectReference<Home>? objRef;
@@ -272,7 +273,7 @@
         viewModel.IsLoading = true;
         StateHasChanged();
         
-        viewModel = await HomePageService.GetHomeViewModelAsync(CategoryName, FeedUrl, 0);
+        viewModel = await HomePageService.GetHomeViewModelBySlugAsync(CategoryName, FeedSlug, 0);
         StateHasChanged();
     }
 
@@ -286,7 +287,7 @@
     {
         if (viewModel.CurrentPage < viewModel.TotalPages - 1)
         {
-            viewModel = await HomePageService.GetHomeViewModelAsync(CategoryName, FeedUrl, viewModel.CurrentPage + 1);
+            viewModel = await HomePageService.GetHomeViewModelBySlugAsync(CategoryName, FeedSlug, viewModel.CurrentPage + 1);
             StateHasChanged();
         }
     }
@@ -295,7 +296,7 @@
     {
         if (viewModel.CurrentPage > 0)
         {
-            viewModel = await HomePageService.GetHomeViewModelAsync(CategoryName, FeedUrl, viewModel.CurrentPage - 1);
+            viewModel = await HomePageService.GetHomeViewModelBySlugAsync(CategoryName, FeedSlug, viewModel.CurrentPage - 1);
             StateHasChanged();
         }
     }
@@ -303,7 +304,7 @@
     private void HandleNavigation(string? categoryName, string? feedUrl)
     {
         CategoryName = categoryName;
-        FeedUrl = feedUrl;
+        FeedSlug = GetFeedSlugFromUrl(feedUrl);
         
         // Update URL
         var url = BuildNavigationUrl(categoryName, feedUrl);
@@ -316,7 +317,8 @@
     {
         if (!string.IsNullOrEmpty(feedUrl))
         {
-            return $"/feed/{Uri.EscapeDataString(feedUrl)}";
+            var slug = GetFeedSlugFromUrl(feedUrl);
+            return $"/feed/{slug}";
         }
         else if (!string.IsNullOrEmpty(categoryName))
         {
@@ -376,6 +378,30 @@
         {
             return "Unknown Feed";
         }
+    }
+
+    /// <summary>
+    /// Gets the slug for a feed URL using the GetSlug method from FeedMetadata
+    /// </summary>
+    private string GetFeedSlug(string feedUrl)
+    {
+        if (string.IsNullOrWhiteSpace(feedUrl))
+            return string.Empty;
+
+        // Create a temporary FeedMetadata to use the GetSlug method
+        var tempMetadata = new FeedMetadata { FeedUrl = feedUrl };
+        return tempMetadata.GetSlug();
+    }
+
+    /// <summary>
+    /// Gets the slug for a feed URL (alternative name for consistency)
+    /// </summary>
+    private string GetFeedSlugFromUrl(string? feedUrl)
+    {
+        if (string.IsNullOrWhiteSpace(feedUrl))
+            return string.Empty;
+
+        return GetFeedSlug(feedUrl);
     }
 
     // Utility methods kept for display
@@ -486,4 +512,4 @@
             }
         }
     };
-</script>
+</script> 

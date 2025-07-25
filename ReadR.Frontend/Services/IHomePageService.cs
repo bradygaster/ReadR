@@ -9,5 +9,10 @@ public interface IHomePageService
         string? feedUrl = null,
         int page = 0
     );
+    Task<HomeViewModel> GetHomeViewModelBySlugAsync(
+        string? categoryName = null,
+        string? feedSlug = null,
+        int page = 0
+    );
     Task RefreshDataAsync();
 }
