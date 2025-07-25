@@ -1,0 +1,179 @@
+/* Layout */
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 300px;
+    background-color: var(--bg-sidebar);
+    color: var(--text-primary);
+    padding: 0;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.main-content {
+    margin-left: 300px;
+    flex: 1;
+    padding: 2rem;
+    background-color: var(--bg-primary);
+    min-height: 100vh;
+}
+
+/* Sidebar Header */
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-nav);
+}
+
+.sidebar-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Navigation */
+.sidebar-nav {
+    padding: 1rem 0;
+}
+
+.nav-item {
+    margin-bottom: 0.25rem;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-size: 0.9rem;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+}
+
+.nav-link:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.nav-link.active {
+    background-color: var(--accent-primary);
+    color: var(--text-inverse);
+    font-weight: 600;
+}
+
+.nav-icon {
+    margin-right: 0.75rem;
+    font-size: 1rem;
+}
+
+/* Categories */
+.nav-category {
+    margin-bottom: 0.5rem;
+}
+
+.category-link {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-tertiary);
+}
+
+.category-icon {
+    margin-right: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.feed-count {
+    margin-left: auto;
+    font-size: 0.75rem;
+    opacity: 0.7;
+    font-weight: normal;
+}
+
+/* Feeds */
+.nav-feeds {
+    margin-left: 1rem;
+    border-left: 2px solid var(--border-color);
+}
+
+.nav-feed-item {
+    margin-bottom: 0.125rem;
+}
+
+.feed-link {
+    font-size: 0.8rem;
+    padding: 0.5rem 1.5rem;
+    color: var(--text-muted);
+}
+
+.feed-link:hover {
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+}
+
+.feed-link.active {
+    background-color: var(--accent-primary);
+    color: var(--text-inverse);
+}
+
+.feed-icon {
+    margin-right: 0.5rem;
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+/* Loading states */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.1em;
+}
+
+.text-muted {
+    opacity: 0.6;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        position: relative;
+        height: auto;
+    }
+    
+    .main-content {
+        margin-left: 0;
+        padding: 1rem;
+    }
+    
+    .app-container {
+        flex-direction: column;
+    }
+}
+
+/* Ensure main content has proper spacing */
+::deep .page-header {
+    margin-bottom: 2rem;
+}
+
+::deep .loading-container,
+::deep .error-container,
+::deep .empty-state {
+    margin-top: 2rem;
+}
+
+::deep .navigation-container {
+    margin-top: 1rem;
+}

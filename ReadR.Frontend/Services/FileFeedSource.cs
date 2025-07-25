@@ -37,7 +37,7 @@ public class FileFeedSource : IFeedSource
             foreach (var line in lines)
             {
                 var trimmedLine = line.Trim();
-                
+
                 // Skip empty lines
                 if (string.IsNullOrWhiteSpace(trimmedLine))
                 {
@@ -61,7 +61,7 @@ public class FileFeedSource : IFeedSource
                 }
 
                 // Validate that the line is a valid URL
-                if (Uri.TryCreate(trimmedLine, UriKind.Absolute, out var uri) && 
+                if (Uri.TryCreate(trimmedLine, UriKind.Absolute, out var uri) &&
                     (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
                 {
                     currentCategory.FeedUrls.Add(trimmedLine);
@@ -73,7 +73,7 @@ public class FileFeedSource : IFeedSource
             }
 
             var totalUrls = categorizedFeeds.GetAllFeedUrls().Count;
-            _logger.LogInformation("Loaded {Count} feed URLs in {CategoryCount} categories from file: {FilePath}", 
+            _logger.LogInformation("Loaded {Count} feed URLs in {CategoryCount} categories from file: {FilePath}",
                 totalUrls, categorizedFeeds.Categories.Count, _filePath);
         }
         catch (Exception ex)

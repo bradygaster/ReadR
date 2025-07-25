@@ -1,0 +1,25 @@
+<div class="navigation-header">
+    <button class="btn btn-secondary nav-btn" @onclick="OnPreviousPage" disabled="@(CurrentPage == 0)">
+        <span>⬅️</span>
+        Previous
+    </button>
+    
+    <div class="entry-counter">
+        <span class="current-entry">@(CurrentPage + 1)</span>
+        <span class="separator">of</span>
+        <span class="total-entries">@TotalPages</span>
+        <span class="page-label">Pages</span>
+    </div>
+    
+    <button class="btn btn-secondary nav-btn" @onclick="OnNextPage" disabled="@(CurrentPage >= TotalPages - 1)">
+        Next
+        <span>➡️</span>
+    </button>
+</div>
+
+@code {
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int TotalPages { get; set; }
+    [Parameter] public EventCallback OnPreviousPage { get; set; }
+    [Parameter] public EventCallback OnNextPage { get; set; }
+}

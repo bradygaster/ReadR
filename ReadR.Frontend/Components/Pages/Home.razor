@@ -1,169 +1,242 @@
 ﻿@page "/"
-@using ReadR.Frontend.Services
-@using ReadR.Frontend.Models
-@using Microsoft.AspNetCore.Components
-@using Microsoft.AspNetCore.Components.Web
-@using Microsoft.JSInterop
-@inject IFeedParser FeedParser
+@page "/category/{CategoryName}"
+@page "/feed/{FeedUrl}"
+@inject IHomePageService HomePageService
+@inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 @implements IDisposable
 @rendermode @(new InteractiveServerRenderMode())
+@using ReadR.Frontend.Models
+@using ReadR.Frontend.ViewModels
+@using ReadR.Frontend.Services
 
-<PageTitle>Latest Posts - ReadR</PageTitle>
+<PageTitle>@viewModel.GetPageTitle() - ReadR</PageTitle>
 
-<div class="page-header">
-    <div class="header-content">
-        <h1 class="page-title">Latest Posts</h1>
-        <p class="page-subtitle">Stay up to date with the .NET community</p>
-    </div>
-    @if (feedEntries?.Any() == true)
-    {
-        <div class="header-stats">
-            <div class="stat-item">
-                <span class="stat-number">Page @(currentPage + 1) of @totalPages</span>
-                <span class="stat-label">@feedEntries.Count Articles</span>
-            </div>
+<div class="app-container">
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">ReadR</h2>
         </div>
-    }
-</div>
-
-@if (isLoading)
-{
-    <div class="loading-container">
-        <div class="loading-content">
-            <div class="spinner-border"></div>
-            <h3 class="loading-title">Fetching latest posts</h3>
-            <p class="loading-subtitle">This won't take long...</p>
-        </div>
-    </div>
-}
-else if (errorMessage != null)
-{
-    <div class="error-container">
-        <div class="alert alert-error">
-            <div class="alert-header">
-                <span class="alert-icon">⚠️</span>
-                <h4 class="alert-title">Something went wrong</h4>
-            </div>
-            <p class="alert-message">@errorMessage</p>
-            <button class="btn btn-secondary" @onclick="RetryLoad">
-                <span>🔄</span>
-                Try Again
-            </button>
-        </div>
-    </div>
-}
-else if (feedEntries?.Any() == true && CurrentPageEntries.Any())
-{
-    <div class="navigation-container">
-        <div class="navigation-header">
-            <button class="btn btn-secondary nav-btn" @onclick="PreviousPage" disabled="@(currentPage == 0)">
-                <span>⬅️</span>
-                Previous
-            </button>
-            
-            <div class="entry-counter">
-                <span class="current-entry">@(currentPage + 1)</span>
-                <span class="separator">of</span>
-                <span class="total-entries">@totalPages</span>
-                <span class="page-label">Pages</span>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-item">
+                <a class="nav-link @GetActiveClass("")" href="/" @onclick="@(() => HandleNavigation(null, null))" @onclick:preventDefault="true">
+                    <span class="nav-icon">🏠</span> All Posts
+                </a>
             </div>
             
-            <button class="btn btn-secondary nav-btn" @onclick="NextPage" disabled="@(currentPage >= totalPages - 1)">
-                Next
-                <span>➡️</span>
-            </button>
-        </div>
-
-        <div class="feeds-grid">
-            @foreach (var entry in CurrentPageEntries)
+            @if (viewModel.IsLoading)
             {
-                <article class="feed-card">
-                    <div class="date-tag">
-                        <span class="date-month">@entry.PublishDate.ToString("MMM")</span>
-                        <span class="date-day">@entry.PublishDate.Day</span>
+                <div class="nav-item">
+                    <div class="nav-link">
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Loading feeds...
                     </div>
-                    <div class="card-body">
-                        <h3 class="card-title">
-                            <a href="@entry.Link" target="_blank" rel="noopener noreferrer">
-                                @entry.Title
+                </div>
+            }
+            else if (viewModel.Categories?.Categories?.Any() == true)
+            {
+                @foreach (var category in viewModel.Categories.Categories)
+                {
+                    <div class="nav-category">
+                        <div class="nav-item">
+                            <a class="nav-link category-link @GetActiveClass($"/category/{Uri.EscapeDataString(category.Name)}")" 
+                               href="@($"/category/{Uri.EscapeDataString(category.Name)}")"
+                               @onclick="@(() => HandleNavigation(category.Name, null))" @onclick:preventDefault="true">
+                                <span class="category-icon">📁</span>
+                                @category.Name
+                                <span class="feed-count">(@category.FeedUrls.Count)</span>
                             </a>
-                        </h3>
-
-                        @if (!string.IsNullOrEmpty(entry.Description))
-                        {
-                            <p class="card-text">
-                                @(TruncateDescription(entry.Description, 150))
-                            </p>
-                        }
-
-                        <div class="card-footer">
-                            <div class="source-tag">
-                                @if (!string.IsNullOrEmpty(entry.FaviconUrl))
-                                {
-                                    <img src="@entry.FaviconUrl" 
-                                         alt="Site icon" 
-                                         class="site-favicon" 
-                                         data-domain="@ExtractDomain(entry.Link)"
-                                         data-fallback-icon="@(!string.IsNullOrEmpty(entry.FallbackIcon) ? entry.FallbackIcon : "🌐")"
-                                         onerror="handleFaviconError(this);" />
-                                    <span class="site-icon" style="display: none;">@(!string.IsNullOrEmpty(entry.FallbackIcon) ? entry.FallbackIcon : "🌐")</span>
-                                }
-                                else if (!string.IsNullOrEmpty(entry.FallbackIcon))
-                                {
-                                    <span class="site-icon">@entry.FallbackIcon</span>
-                                }
-                                else
-                                {
-                                    <span class="site-icon">🌐</span>
-                                }
-                                <span>@entry.FeedSource</span>
-                                @if (IsYouTubeEntry(entry))
-                                {
-                                    <span class="platform-label">YouTube</span>
-                                }
-                            </div>
+                        </div>
+                        
+                        <div class="nav-feeds">
+                            @foreach (var feedUrl in category.FeedUrls)
+                            {
+                                var feedName = GetFeedDisplayName(feedUrl);
+                                <div class="nav-item nav-feed-item">
+                                    <a class="nav-link feed-link @GetActiveClass($"/feed/{Uri.EscapeDataString(feedUrl)}")" 
+                                       href="@($"/feed/{Uri.EscapeDataString(feedUrl)}")"
+                                       @onclick="@(() => HandleNavigation(null, feedUrl))" @onclick:preventDefault="true">
+                                        <span class="feed-icon">📄</span>
+                                        @feedName
+                                    </a>
+                                </div>
+                            }
                         </div>
                     </div>
-                </article>
+                }
+            }
+            else if (!viewModel.IsLoading)
+            {
+                <div class="nav-item">
+                    <div class="nav-link text-muted">
+                        <span class="nav-icon">⚠️</span>
+                        No feeds available
+                    </div>
+                </div>
+            }
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <div class="header-content">
+                <h1 class="page-title">@viewModel.GetPageTitle()</h1>
+                <p class="page-subtitle">@viewModel.GetPageSubtitle()</p>
+            </div>
+            @if (viewModel.Entries?.Any() == true)
+            {
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">Page @(viewModel.CurrentPage + 1) of @viewModel.TotalPages</span>
+                        <span class="stat-label">@viewModel.Entries.Count Articles</span>
+                    </div>
+                </div>
             }
         </div>
+
+        @if (viewModel.IsLoading)
+        {
+            <div class="loading-container">
+                <div class="loading-content">
+                    <div class="spinner-border"></div>
+                    <h3 class="loading-title">Fetching latest posts</h3>
+                    <p class="loading-subtitle">This won't take long...</p>
+                </div>
+            </div>
+        }
+        else if (viewModel.ErrorMessage != null)
+        {
+            <div class="error-container">
+                <div class="alert alert-error">
+                    <div class="alert-header">
+                        <span class="alert-icon">⚠️</span>
+                        <h4 class="alert-title">Something went wrong</h4>
+                    </div>
+                    <p class="alert-message">@viewModel.ErrorMessage</p>
+                    <button class="btn btn-secondary" @onclick="RetryLoad">
+                        <span>🔄</span>
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        }
+        else if (viewModel.Entries?.Any() == true && CurrentPageEntries.Any())
+        {
+            <div class="navigation-container">
+                <div class="navigation-header">
+                    <button class="btn btn-secondary nav-btn" @onclick="PreviousPage" disabled="@(viewModel.CurrentPage == 0)">
+                        <span>⬅️</span>
+                        Previous
+                    </button>
+                    
+                    <div class="entry-counter">
+                        <span class="current-entry">@(viewModel.CurrentPage + 1)</span>
+                        <span class="separator">of</span>
+                        <span class="total-entries">@viewModel.TotalPages</span>
+                        <span class="page-label">Pages</span>
+                    </div>
+                    
+                    <button class="btn btn-secondary nav-btn" @onclick="NextPage" disabled="@(viewModel.CurrentPage >= viewModel.TotalPages - 1)">
+                        Next
+                        <span>➡️</span>
+                    </button>
+                </div>
+
+                <div class="feeds-grid">
+                    @foreach (var entry in CurrentPageEntries)
+                    {
+                        <article class="feed-card">
+                            <div class="date-tag">
+                                <span class="date-month">@entry.PublishDate.ToString("MMM")</span>
+                                <span class="date-day">@entry.PublishDate.Day</span>
+                            </div>
+                            <div class="card-body">
+                                <h3 class="card-title">
+                                    <a href="@entry.Link" target="_blank" rel="noopener noreferrer">
+                                        @entry.Title
+                                    </a>
+                                </h3>
+
+                                @if (!string.IsNullOrEmpty(entry.Description))
+                                {
+                                    <p class="card-text">
+                                        @(TruncateDescription(entry.Description, 150))
+                                    </p>
+                                }
+
+                                <div class="card-footer">
+                                    <div class="source-tag">
+                                        @if (!string.IsNullOrEmpty(entry.FaviconUrl))
+                                        {
+                                            <img src="@entry.FaviconUrl" 
+                                                 alt="Site icon" 
+                                                 class="site-favicon" 
+                                                 data-domain="@ExtractDomain(entry.Link)"
+                                                 data-fallback-icon="@(!string.IsNullOrEmpty(entry.FallbackIcon) ? entry.FallbackIcon : "🌐")"
+                                                 onerror="handleFaviconError(this);" />
+                                            <span class="site-icon" style="display: none;">@(!string.IsNullOrEmpty(entry.FallbackIcon) ? entry.FallbackIcon : "🌐")</span>
+                                        }
+                                        else if (!string.IsNullOrEmpty(entry.FallbackIcon))
+                                        {
+                                            <span class="site-icon">@entry.FallbackIcon</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="site-icon">🌐</span>
+                                        }
+                                        <span>@entry.FeedDisplayName</span>
+                                        @if (IsYouTubeEntry(entry))
+                                        {
+                                            <span class="platform-label">YouTube</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-content">
+                    <div class="empty-icon">📚</div>
+                    <h3 class="empty-title">No posts found</h3>
+                    <p class="empty-subtitle">
+                        Check back later for the latest updates from the .NET community.
+                    </p>
+                    <button class="btn btn-primary" @onclick="RetryLoad">
+                        <span>🔄</span>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+        }
     </div>
-}
-else
-{
-    <div class="empty-state">
-        <div class="empty-content">
-            <div class="empty-icon">📚</div>
-            <h3 class="empty-title">No posts found</h3>
-            <p class="empty-subtitle">
-                Check back later for the latest updates from the .NET community.
-            </p>
-            <button class="btn btn-primary" @onclick="RetryLoad">
-                <span>🔄</span>
-                Refresh
-            </button>
-        </div>
-    </div>
-}
+</div>
 
 @code {
-    private List<FeedEntry>? feedEntries;
-    private bool isLoading = true;
-    private string? errorMessage;
-    private int currentPage = 0;
-    private const int entriesPerPage = 9;
+    [Parameter] public string? CategoryName { get; set; }
+    [Parameter] public string? FeedUrl { get; set; }
+    
+    private HomeViewModel viewModel = new();
     private DotNetObjectReference<Home>? objRef;
+    private const int entriesPerPage = 9;
 
-    private int totalPages => feedEntries?.Count > 0 ? (int)Math.Ceiling((double)feedEntries.Count / entriesPerPage) : 0;
-    private List<FeedEntry> CurrentPageEntries => feedEntries?
-        .Skip(currentPage * entriesPerPage)
-        .Take(entriesPerPage)
-        .ToList() ?? new List<FeedEntry>();
+    private List<FeedEntry> CurrentPageEntries => viewModel.GetCurrentPageEntries(entriesPerPage);
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadFeeds();
+        await LoadViewModel();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadViewModel();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -176,15 +249,15 @@ else
     }
 
     [JSInvokable]
-    public void HandleKeyPress(string key)
+    public async Task HandleKeyPress(string key)
     {
         switch (key)
         {
             case "ArrowLeft":
-                PreviousPage();
+                await PreviousPage();
                 break;
             case "ArrowRight":
-                NextPage();
+                await NextPage();
                 break;
         }
     }
@@ -194,52 +267,118 @@ else
         objRef?.Dispose();
     }
 
-    private async Task LoadFeeds()
+    private async Task LoadViewModel()
     {
-        try
-        {
-            isLoading = true;
-            errorMessage = null;
-            StateHasChanged();
-
-            var allEntries = await FeedParser.ParseAllFeedsAsync();
-            feedEntries = allEntries.ToList();
-            currentPage = 0; // Reset to first page
-        }
-        catch (Exception)
-        {
-            errorMessage = "Unable to load feeds at this time. Please check your connection and try again.";
-        }
-        finally
-        {
-            isLoading = false;
-            StateHasChanged();
-        }
+        viewModel.IsLoading = true;
+        StateHasChanged();
+        
+        viewModel = await HomePageService.GetHomeViewModelAsync(CategoryName, FeedUrl, 0);
+        StateHasChanged();
     }
 
     private async Task RetryLoad()
     {
-        await LoadFeeds();
+        await HomePageService.RefreshDataAsync();
+        await LoadViewModel();
     }
 
-    private void NextPage()
+    private async Task NextPage()
     {
-        if (currentPage < totalPages - 1)
+        if (viewModel.CurrentPage < viewModel.TotalPages - 1)
         {
-            currentPage++;
+            viewModel = await HomePageService.GetHomeViewModelAsync(CategoryName, FeedUrl, viewModel.CurrentPage + 1);
             StateHasChanged();
         }
     }
 
-    private void PreviousPage()
+    private async Task PreviousPage()
     {
-        if (currentPage > 0)
+        if (viewModel.CurrentPage > 0)
         {
-            currentPage--;
+            viewModel = await HomePageService.GetHomeViewModelAsync(CategoryName, FeedUrl, viewModel.CurrentPage - 1);
             StateHasChanged();
         }
     }
 
+    private void HandleNavigation(string? categoryName, string? feedUrl)
+    {
+        CategoryName = categoryName;
+        FeedUrl = feedUrl;
+        
+        // Update URL
+        var url = BuildNavigationUrl(categoryName, feedUrl);
+        Navigation.NavigateTo(url, false);
+        
+        // LoadViewModel will be called automatically by OnParametersSetAsync() when navigation completes
+    }
+
+    private string BuildNavigationUrl(string? categoryName, string? feedUrl)
+    {
+        if (!string.IsNullOrEmpty(feedUrl))
+        {
+            return $"/feed/{Uri.EscapeDataString(feedUrl)}";
+        }
+        else if (!string.IsNullOrEmpty(categoryName))
+        {
+            return $"/category/{Uri.EscapeDataString(categoryName)}";
+        }
+        return "/";
+    }
+
+    private string GetActiveClass(string href)
+    {
+        var currentUri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var targetUri = Navigation.ToAbsoluteUri(href);
+        
+        // For the home page, match exactly
+        if (href == "/" && currentUri.PathAndQuery == "/")
+        {
+            return "active";
+        }
+        
+        // For other pages, check if current path starts with the target path
+        if (href != "/" && currentUri.PathAndQuery.StartsWith(targetUri.PathAndQuery, StringComparison.OrdinalIgnoreCase))
+        {
+            return "active";
+        }
+        
+        return "";
+    }
+
+    private string GetFeedDisplayName(string feedUrl)
+    {
+        // Try to get the display name from cached metadata first
+        if (viewModel.FeedMetadata != null && viewModel.FeedMetadata.TryGetValue(feedUrl, out var metadata))
+        {
+            return metadata.DisplayName;
+        }
+
+        // Fallback: look in entries from this feed for the display name
+        if (viewModel.Entries != null)
+        {
+            var entriesFromFeed = viewModel.Entries.Where(e => e.FeedUrl == feedUrl).FirstOrDefault();
+            if (entriesFromFeed != null && !string.IsNullOrWhiteSpace(entriesFromFeed.FeedDisplayName))
+            {
+                return entriesFromFeed.FeedDisplayName;
+            }
+        }
+
+        // Final fallback to domain extraction if no metadata available
+        try
+        {
+            var uri = new Uri(feedUrl);
+            var host = uri.Host.ToLowerInvariant();
+            if (host.StartsWith("www."))
+                host = host[4..];
+            return host;
+        }
+        catch
+        {
+            return "Unknown Feed";
+        }
+    }
+
+    // Utility methods kept for display
     private static string TruncateDescription(string description, int maxLength)
     {
         if (string.IsNullOrEmpty(description) || description.Length <= maxLength)
@@ -262,13 +401,11 @@ else
 
     private static bool IsYouTubeEntry(FeedEntry entry)
     {
-        // Check if the link contains YouTube domains
         if (!string.IsNullOrEmpty(entry.Link))
         {
             return entry.Link.Contains("youtube.com", StringComparison.OrdinalIgnoreCase) ||
                    entry.Link.Contains("youtu.be", StringComparison.OrdinalIgnoreCase);
         }
-        
         return false;
     }
 
@@ -337,32 +474,11 @@ else
             img.dataset.tried = triedUrls.join(',');
         }
         
-        // Define fallback URLs in order of preference
-        const fallbackUrls = [
-            `https://${domain}/apple-touch-icon.png`,
-            `https://${domain}/apple-touch-icon-180x180.png`,
-            `https://${domain}/favicon.png`,
-            `https://${domain}/favicon-32x32.png`,
-            `https://${domain}/assets/favicon.ico`,
-            `https://${domain}/images/favicon.ico`,
-            `https://${domain}/img/favicon.ico`,
-            `https://www.google.com/s2/favicons?domain=${domain}&sz=32`
-        ];
-        
-        // Find the next untried URL
-        let nextUrl = null;
-        for (const url of fallbackUrls) {
-            if (!triedUrls.includes(url)) {
-                nextUrl = url;
-                break;
-            }
-        }
-        
-        if (nextUrl) {
-            // Try the next fallback URL
-            img.src = nextUrl;
+        // Only try one simple fallback - if favicon.ico fails, show emoji
+        if (!triedUrls.includes(`https://${domain}/favicon.ico`)) {
+            img.src = `https://${domain}/favicon.ico`;
         } else {
-            // All image fallbacks failed, switch to emoji icon
+            // All fallbacks failed, switch to emoji icon
             img.style.display = 'none';
             const emojiSpan = img.nextElementSibling;
             if (emojiSpan && emojiSpan.classList.contains('site-icon')) {
@@ -370,12 +486,4 @@ else
             }
         }
     };
-    
-    // Preload Google's favicon service for better performance
-    window.addEventListener('DOMContentLoaded', function() {
-        const link = document.createElement('link');
-        link.rel = 'dns-prefetch';
-        link.href = '//www.google.com';
-        document.head.appendChild(link);
-    });
 </script>

@@ -12,4 +12,6 @@ public class FeedEntry
     public string? FallbackIcon { get; set; }
     public List<string> Categories { get; set; } = new();
     public string? SourceCategory { get; set; }
+    public string FeedDisplayName { get; set; } = string.Empty; 
+    public string FeedUrl { get; set; } = string.Empty;
 }

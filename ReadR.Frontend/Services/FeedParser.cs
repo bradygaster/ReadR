@@ -29,14 +29,16 @@ public class FeedParser : IFeedParser
 
         try
         {
-            using var response = await _httpClient.GetAsync(feedUrl);
+            // Set a reasonable timeout for the request
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            using var response = await _httpClient.GetAsync(feedUrl, cts.Token);
             response.EnsureSuccessStatusCode();
 
-            using var stream = await response.Content.ReadAsStreamAsync();
+            using var stream = await response.Content.ReadAsStreamAsync(cts.Token);
             using var xmlReader = XmlReader.Create(stream);
 
             var feed = SyndicationFeed.Load(xmlReader);
-            var feedTitle = feed.Title?.Text ?? ExtractDomainFromUrl(feedUrl);
+            var feedTitle = GetFeedDisplayName(feed, feedUrl);
 
             foreach (var item in feed.Items)
             {
@@ -52,19 +54,41 @@ public class FeedParser : IFeedParser
                     Author = GetAuthor(item),
                     FeedSource = feedTitle,
                     Categories = item.Categories.Select(c => c.Name).ToList(),
-                    SourceCategory = sourceCategory
+                    SourceCategory = sourceCategory,
+                    FeedDisplayName = feedTitle,
+                    FeedUrl = feedUrl,
+                    FaviconUrl = GetSimpleFaviconUrl(feedUrl),
+                    FallbackIcon = GetSimpleFallbackIcon(feedTitle),
                 };
-
-                // Get favicon information using static helper
-                entry.FaviconUrl = FaviconHelper.GetOptimalFaviconUrl(feedUrl);
-                entry.FallbackIcon = FaviconHelper.GetFallbackIcon(feedTitle);
 
                 entries.Add(entry);
             }
+
+            _logger.LogInformation(
+                "Successfully parsed {Count} entries from feed: {FeedUrl}",
+                entries.Count,
+                feedUrl
+            );
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogWarning(ex, "HTTP error while fetching feed, skipping: {FeedUrl}", feedUrl);
+            return new List<FeedEntry>();
+        }
+        catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+        {
+            _logger.LogWarning("Feed request timed out, skipping: {FeedUrl}", feedUrl);
+            return new List<FeedEntry>();
+        }
+        catch (XmlException ex)
+        {
+            _logger.LogWarning(ex, "Invalid XML in feed, skipping: {FeedUrl}", feedUrl);
+            return new List<FeedEntry>();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to parse feed: {FeedUrl}", feedUrl);
+            _logger.LogWarning(ex, "Failed to parse feed, skipping: {FeedUrl}", feedUrl);
+            return new List<FeedEntry>();
         }
 
         return entries;
@@ -76,21 +100,45 @@ public class FeedParser : IFeedParser
         var categorizedFeeds = await _feedSource.GetCategorizedFeedsAsync();
 
         var tasks = new List<Task<List<FeedEntry>>>();
+        var feedUrls = new List<string>();
 
         foreach (var category in categorizedFeeds.Categories)
         {
             foreach (var feedUrl in category.FeedUrls)
             {
                 tasks.Add(ParseFeedAsync(feedUrl, category.Name));
+                feedUrls.Add(feedUrl);
             }
         }
 
         var results = await Task.WhenAll(tasks);
+        var successCount = 0;
+        var failedCount = 0;
 
-        foreach (var entries in results)
+        for (int i = 0; i < results.Length; i++)
         {
-            allEntries.AddRange(entries);
+            var entries = results[i];
+            if (entries.Count > 0)
+            {
+                allEntries.AddRange(entries);
+                successCount++;
+            }
+            else
+            {
+                failedCount++;
+                _logger.LogDebug(
+                    "Feed returned no entries (likely failed): {FeedUrl}",
+                    feedUrls[i]
+                );
+            }
         }
+
+        _logger.LogInformation(
+            "Parsed feeds: {SuccessCount} successful, {FailedCount} failed, {TotalEntries} total entries",
+            successCount,
+            failedCount,
+            allEntries.Count
+        );
 
         // Sort by publish date, newest first
         return allEntries.OrderByDescending(e => e.PublishDate).ToList();
@@ -99,7 +147,7 @@ public class FeedParser : IFeedParser
     public async Task<Dictionary<string, List<FeedEntry>>> ParseAllFeedsByCategoryAsync()
     {
         var allEntries = await ParseAllFeedsAsync();
-        
+
         return allEntries
             .GroupBy(entry => entry.SourceCategory ?? "Uncategorized")
             .ToDictionary(g => g.Key, g => g.OrderByDescending(e => e.PublishDate).ToList());
@@ -200,7 +248,9 @@ public class FeedParser : IFeedParser
 
                 if (flexibleMatch.Success)
                 {
-                    var desc = System.Net.WebUtility.HtmlDecode(flexibleMatch.Groups[1].Value).Trim();
+                    var desc = System
+                        .Net.WebUtility.HtmlDecode(flexibleMatch.Groups[1].Value)
+                        .Trim();
                     if (!string.IsNullOrWhiteSpace(desc) && !IsUnhelpfulContent(desc))
                         return desc;
                 }
@@ -534,7 +584,9 @@ public class FeedParser : IFeedParser
     private static string? GetSiteUrlFromFeed(SyndicationFeed feed)
     {
         // Try to get the main site URL from feed links
-        var link = feed.Links.FirstOrDefault(l => l.RelationshipType == "alternate" || string.IsNullOrEmpty(l.RelationshipType));
+        var link = feed.Links.FirstOrDefault(l =>
+            l.RelationshipType == "alternate" || string.IsNullOrEmpty(l.RelationshipType)
+        );
         return link?.Uri.ToString();
     }
 
@@ -552,5 +604,61 @@ public class FeedParser : IFeedParser
         {
             return null;
         }
+    }
+
+    private static string GetFeedDisplayName(SyndicationFeed feed, string feedUrl)
+    {
+        // Use feed title if available and meaningful
+        var feedTitle = feed.Title?.Text?.Trim();
+        if (!string.IsNullOrWhiteSpace(feedTitle) && feedTitle.Length > 1)
+        {
+            return feedTitle;
+        }
+
+        // Fallback to domain extraction
+        return ExtractDomainFromUrl(feedUrl);
+    }
+
+    private static string GetSimpleFaviconUrl(string feedUrl)
+    {
+        try
+        {
+            var uri = new Uri(feedUrl);
+            return $"https://{uri.Host}/favicon.ico";
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    private static string GetSimpleFallbackIcon(string feedTitle)
+    {
+        if (string.IsNullOrWhiteSpace(feedTitle))
+            return "🌐";
+
+        var lowerTitle = feedTitle.ToLowerInvariant();
+
+        // Simple pattern matching for common feed types
+        if (lowerTitle.Contains("microsoft") || lowerTitle.Contains("ms"))
+            return "🏢";
+        if (lowerTitle.Contains("azure"))
+            return "☁️";
+        if (lowerTitle.Contains("dotnet") || lowerTitle.Contains(".net"))
+            return "⚙️";
+        if (lowerTitle.Contains("github"))
+            return "🐙";
+        if (lowerTitle.Contains("youtube"))
+            return "📺";
+        if (lowerTitle.Contains("blog"))
+            return "📝";
+        if (lowerTitle.Contains("news"))
+            return "📰";
+        if (lowerTitle.Contains("dev") || lowerTitle.Contains("developer"))
+            return "👨‍💻";
+        if (lowerTitle.Contains("tech") || lowerTitle.Contains("technology"))
+            return "💻";
+
+        return "🌐";
     }
 }

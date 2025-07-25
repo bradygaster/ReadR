@@ -1,0 +1,129 @@
+@using ReadR.Frontend.Models
+@using ReadR.Frontend.ViewModels
+@inject NavigationManager Navigation
+
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h2 class="sidebar-title">ReadR</h2>
+    </div>
+    
+    <nav class="sidebar-nav">
+        <div class="nav-item">
+            <a class="nav-link @GetActiveClass("")" href="/" @onclick="@(() => OnNavigate.InvokeAsync((null, null)))" @onclick:preventDefault="true">
+                <span class="nav-icon">🏠</span> All Posts
+            </a>
+        </div>
+        
+        @if (IsLoading)
+        {
+            <div class="nav-item">
+                <div class="nav-link">
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Loading feeds...
+                </div>
+            </div>
+        }
+        else if (Categories?.Categories?.Any() == true)
+        {
+            @foreach (var category in Categories.Categories)
+            {
+                <div class="nav-category">
+                    <div class="nav-item">
+                        <a class="nav-link category-link @GetActiveClass($"/category/{Uri.EscapeDataString(category.Name)}")" 
+                           href="@($"/category/{Uri.EscapeDataString(category.Name)}")"
+                           @onclick="@(() => OnNavigate.InvokeAsync((category.Name, null)))" @onclick:preventDefault="true">
+                            <span class="category-icon">📁</span>
+                            @category.Name
+                            <span class="feed-count">(@category.FeedUrls.Count)</span>
+                        </a>
+                    </div>
+                    
+                    <div class="nav-feeds">
+                        @foreach (var feedUrl in category.FeedUrls)
+                        {
+                            var feedName = GetFeedDisplayName(feedUrl);
+                            <div class="nav-item nav-feed-item">
+                                <a class="nav-link feed-link @GetActiveClass($"/feed/{Uri.EscapeDataString(feedUrl)}")" 
+                                   href="@($"/feed/{Uri.EscapeDataString(feedUrl)}")"
+                                   @onclick="@(() => OnNavigate.InvokeAsync((null, feedUrl)))" @onclick:preventDefault="true">
+                                    <span class="feed-icon">📄</span>
+                                    @feedName
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else if (!IsLoading)
+        {
+            <div class="nav-item">
+                <div class="nav-link text-muted">
+                    <span class="nav-icon">⚠️</span>
+                    No feeds available
+                </div>
+            </div>
+        }
+    </nav>
+</div>
+
+@code {
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public CategorizedFeeds? Categories { get; set; }
+    [Parameter] public Dictionary<string, FeedMetadata>? FeedMetadata { get; set; }
+    [Parameter] public List<FeedEntry>? Entries { get; set; }
+    [Parameter] public EventCallback<(string? CategoryName, string? FeedUrl)> OnNavigate { get; set; }
+
+    private string GetActiveClass(string href)
+    {
+        var currentUri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var targetUri = Navigation.ToAbsoluteUri(href);
+        
+        // For the home page, match exactly
+        if (href == "/" && currentUri.PathAndQuery == "/")
+        {
+            return "active";
+        }
+        
+        // For other pages, check if current path starts with the target path
+        if (href != "/" && currentUri.PathAndQuery.StartsWith(targetUri.PathAndQuery, StringComparison.OrdinalIgnoreCase))
+        {
+            return "active";
+        }
+        
+        return "";
+    }
+
+    private string GetFeedDisplayName(string feedUrl)
+    {
+        // Try to get the display name from cached metadata first
+        if (FeedMetadata != null && FeedMetadata.TryGetValue(feedUrl, out var metadata))
+        {
+            return metadata.DisplayName;
+        }
+
+        // Fallback: look in entries from this feed for the display name
+        if (Entries != null)
+        {
+            var entriesFromFeed = Entries.Where(e => e.FeedUrl == feedUrl).FirstOrDefault();
+            if (entriesFromFeed != null && !string.IsNullOrWhiteSpace(entriesFromFeed.FeedDisplayName))
+            {
+                return entriesFromFeed.FeedDisplayName;
+            }
+        }
+
+        // Final fallback to domain extraction if no metadata available
+        try
+        {
+            var uri = new Uri(feedUrl);
+            var host = uri.Host.ToLowerInvariant();
+            if (host.StartsWith("www."))
+                host = host[4..];
+            return host;
+        }
+        catch
+        {
+            return "Unknown Feed";
+        }
+    }
+}

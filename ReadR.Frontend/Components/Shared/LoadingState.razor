@@ -1,0 +1,12 @@
+<div class="loading-container">
+    <div class="loading-content">
+        <div class="spinner-border"></div>
+        <h3 class="loading-title">@Title</h3>
+        <p class="loading-subtitle">@Subtitle</p>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Loading...";
+    [Parameter] public string Subtitle { get; set; } = "Please wait...";
+}
