@@ -2,8 +2,7 @@ using ReadR.Frontend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 // Add memory cache
 builder.Services.AddMemoryCache();
@@ -18,7 +17,7 @@ builder.Services.AddHttpClient<FeedParser>(client =>
 // Register feed source service
 builder.Services.AddSingleton<IFeedSource, FileFeedSource>();
 
-// Register feed parser service  
+// Register feed parser service
 builder.Services.AddScoped<IFeedParser, FeedParser>();
 
 // Add new cache and page services
@@ -36,8 +35,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAntiforgery();
 app.MapStaticAssets();
-app.MapRazorComponents<ReadR.Frontend.Components.App>()
-   .AddInteractiveServerRenderMode();
+app.MapRazorComponents<ReadR.Frontend.Components.App>().AddInteractiveServerRenderMode();
 
 app.Run();
 
@@ -50,7 +48,6 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAntiforgery();
 app.MapStaticAssets();
-app.MapRazorComponents<ReadR.Frontend.Components.App>()
-   .AddInteractiveServerRenderMode();
+app.MapRazorComponents<ReadR.Frontend.Components.App>().AddInteractiveServerRenderMode();
 
 app.Run();
