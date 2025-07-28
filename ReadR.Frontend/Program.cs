@@ -1,4 +1,5 @@
 using ReadR.Frontend.Services;
+using Microsoft.Extensions.Azure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,12 @@ builder.Services.AddScoped<IFeedParser, FeedParser>();
 // Add new cache and page services
 builder.Services.AddScoped<IFeedCacheService, FeedCacheService>();
 builder.Services.AddScoped<IHomePageService, HomePageService>();
+builder.Services.AddAzureClients(clientBuilder =>
+{
+    clientBuilder.AddBlobServiceClient(builder.Configuration["readrstorage:blobServiceUri"]!).WithName("readrstorage");
+    clientBuilder.AddQueueServiceClient(builder.Configuration["readrstorage:queueServiceUri"]!).WithName("readrstorage");
+    clientBuilder.AddTableServiceClient(builder.Configuration["readrstorage:tableServiceUri"]!).WithName("readrstorage");
+});
 
 var app = builder.Build();
 
