@@ -1,5 +1,6 @@
 using ReadR.Frontend.Services;
 using Microsoft.Extensions.Azure;
+using ReadR.Shared.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
