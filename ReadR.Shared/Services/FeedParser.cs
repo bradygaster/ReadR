@@ -3,7 +3,7 @@ using System.ServiceModel.Syndication;
 using System.Xml;
 using ReadR.Frontend.Models;
 
-namespace ReadR.Frontend.Services;
+namespace ReadR.Shared.Services;
 
 public class FeedParser : IFeedParser
 {
