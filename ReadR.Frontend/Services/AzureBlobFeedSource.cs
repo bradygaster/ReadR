@@ -44,8 +44,18 @@ public class AzureBlobFeedSource : IFeedSource
             var exists = await blobClient.ExistsAsync();
             if (!exists.Value)
             {
-                _logger.LogError("Feed URLs blob not found: {ContainerName}/{BlobName}", _containerName, _blobName);
-                return categorizedFeeds;
+                _logger.LogInformation("Feed URLs blob not found: {ContainerName}/{BlobName}. Creating from local file.", _containerName, _blobName);
+                
+                // Try to create the blob from the local file
+                await CreateBlobFromLocalFileAsync(blobClient);
+                
+                // Check again if the blob exists after creation
+                exists = await blobClient.ExistsAsync();
+                if (!exists.Value)
+                {
+                    _logger.LogError("Failed to create feed URLs blob from local file: {ContainerName}/{BlobName}", _containerName, _blobName);
+                    return categorizedFeeds;
+                }
             }
 
             // Download the blob content
@@ -110,5 +120,28 @@ public class AzureBlobFeedSource : IFeedSource
         }
 
         return categorizedFeeds;
+    }
+
+    private async Task CreateBlobFromLocalFileAsync(Azure.Storage.Blobs.BlobClient blobClient)
+    {
+        try
+        {
+            var localFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "feed-urls.txt");
+            
+            if (!File.Exists(localFilePath))
+            {
+                _logger.LogError("Local feed URLs file not found at: {FilePath}", localFilePath);
+                return;
+            }
+
+            var content = await File.ReadAllTextAsync(localFilePath);
+            await blobClient.UploadAsync(BinaryData.FromString(content), overwrite: false);
+            
+            _logger.LogInformation("Successfully created blob from local file: {FilePath}", localFilePath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to create blob from local file");
+        }
     }
 }
