@@ -6,19 +6,19 @@ namespace ReadR.Frontend.Services;
 public class QueueBackgroundService : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly IAzureClientFactory<QueueServiceClient> _queueClientFactory;
+    private readonly QueueServiceClient _queueServiceClient;
     private readonly ILogger<QueueBackgroundService> _logger;
     private readonly IConfiguration _configuration;
     private QueueClient? _queueClient;
 
     public QueueBackgroundService(
         IServiceProvider serviceProvider,
-        IAzureClientFactory<QueueServiceClient> queueClientFactory,
+        QueueServiceClient queueServiceClient,
         ILogger<QueueBackgroundService> logger,
         IConfiguration configuration)
     {
         _serviceProvider = serviceProvider;
-        _queueClientFactory = queueClientFactory;
+        _queueServiceClient = queueServiceClient;
         _logger = logger;
         _configuration = configuration;
     }
@@ -30,9 +30,8 @@ public class QueueBackgroundService : BackgroundService
         try
         {
             // Initialize the queue client
-            var queueServiceClient = _queueClientFactory.CreateClient("readrstorage");
             var queueName = _configuration["QueueSettings:FeedRefreshQueueName"] ?? "feed-refresh";
-            _queueClient = queueServiceClient.GetQueueClient(queueName);
+            _queueClient = _queueServiceClient.GetQueueClient(queueName);
 
             // Create the queue if it doesn't exist
             await _queueClient.CreateIfNotExistsAsync(cancellationToken: stoppingToken);
