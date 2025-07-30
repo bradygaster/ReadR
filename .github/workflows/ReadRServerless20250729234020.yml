@@ -1,6 +1,10 @@
 name: Build & Deploy Function
 on:
   workflow_dispatch:
+  
+permissions:
+  id-token: write
+  contents: read
 env:
   AZURE_FUNCTIONAPP_NAME: ReadRServerless20250729234020
   AZURE_FUNCTIONAPP_PACKAGE_PATH: ReadR.Serverless/published
