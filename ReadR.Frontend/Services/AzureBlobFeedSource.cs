@@ -13,11 +13,11 @@ public class AzureBlobFeedSource : IFeedSource
     private readonly string _blobName;
 
     public AzureBlobFeedSource(
-        IAzureClientFactory<BlobServiceClient> azureClientFactory,
+        BlobServiceClient blobServiceClient,
         ILogger<AzureBlobFeedSource> logger,
         IConfiguration configuration)
     {
-        _blobServiceClient = azureClientFactory.CreateClient("readrstorage");
+        _blobServiceClient = blobServiceClient;
         _logger = logger;
         _containerName = configuration["Azure:Blob:FeedContainer"] ?? "feeds";
         _blobName = configuration["Azure:Blob:FeedFileName"] ?? "feed-urls.txt";

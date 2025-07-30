@@ -10,16 +10,16 @@ public interface IQueueService
 
 public class QueueService : IQueueService
 {
-    private readonly IAzureClientFactory<QueueServiceClient> _queueClientFactory;
+    private readonly QueueServiceClient _queueServiceClient;
     private readonly IConfiguration _configuration;
     private readonly ILogger<QueueService> _logger;
 
     public QueueService(
-        IAzureClientFactory<QueueServiceClient> queueClientFactory,
+        QueueServiceClient queueServiceClient,
         IConfiguration configuration,
         ILogger<QueueService> logger)
     {
-        _queueClientFactory = queueClientFactory;
+        _queueServiceClient = queueServiceClient;
         _configuration = configuration;
         _logger = logger;
     }
@@ -28,9 +28,8 @@ public class QueueService : IQueueService
     {
         try
         {
-            var queueServiceClient = _queueClientFactory.CreateClient("readrstorage");
             var queueName = _configuration["QueueSettings:FeedRefreshQueueName"] ?? "feed-refresh";
-            var queueClient = queueServiceClient.GetQueueClient(queueName);
+            var queueClient = _queueServiceClient.GetQueueClient(queueName);
 
             // Create queue if it doesn't exist
             await queueClient.CreateIfNotExistsAsync();

@@ -23,4 +23,7 @@
     <PackageReference Include="Microsoft.Extensions.Azure" Version="1.11.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.3" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ReadR.ServiceDefaults\ReadR.ServiceDefaults.csproj" />
+  </ItemGroup>
 </Project>

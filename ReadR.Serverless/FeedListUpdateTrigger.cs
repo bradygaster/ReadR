@@ -16,9 +16,9 @@ public class FeedListUpdateTrigger
     }
 
     [Function(nameof(FeedListUpdateTrigger))]
-    [QueueOutput("feed-refresh", Connection = "readrstorage")]
+    [QueueOutput("feed-refresh", Connection = "queues")]
     public async Task<string> Run(
-        [BlobTrigger("readr-feeds/{name}", Connection = "readrstorage")] Stream stream, 
+        [BlobTrigger("readr-feeds/{name}", Connection = "blobs")] Stream stream, 
         string name)
     {
         using var blobStreamReader = new StreamReader(stream);
