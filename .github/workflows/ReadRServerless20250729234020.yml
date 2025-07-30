@@ -1,7 +1,6 @@
 name: Build & Deploy Function
 on:
   workflow_dispatch:
-  
 permissions:
   id-token: write
   contents: read
@@ -49,9 +48,9 @@ jobs:
     - name: Azure Login
       uses: azure/login@v2
       with:
-        client-id: ${{ vars.readrdev_CLIENT_ID_10A6 }}
-        tenant-id: ${{ vars.readrdev_TENANT_ID_E6C2 }}
-        subscription-id: ${{ vars.readrdev_SUBSCRIPTION_ID_E6C2 }}
+        client-id: ${{ vars.ReadRServerless20250729234020_CLIENT_ID_F155 }}
+        tenant-id: ${{ vars.ReadRServerless20250729234020_TENANT_ID_F155 }}
+        subscription-id: ${{ vars.ReadRServerless20250729234020_SUBSCRIPTION_ID_F155 }}
     - name: Deploy to Azure Function App
       uses: Azure/functions-action@v1
       with:
