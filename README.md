@@ -51,317 +51,143 @@ graph TB
 
 ### Key Features
 
-- **Categorized RSS Feeds**: Organize feeds by topics for easy browsing
-- **Memory Caching**: Efficient caching to minimize external HTTP requests
-- **Real-time Updates**: Automatic cache refresh when feed lists change
-- **Responsive Design**: Clean, modern UI for feed browsing
-- **Cloud-Native**: Built for Azure with local development support
+- **RSS Feed Aggregation**: Automatically fetches and displays RSS feeds from multiple sources
+- **Categorized Display**: Organizes feeds by categories for better user experience
+- **Memory Caching**: Prevents excessive API calls and improves performance
+- **Event-Driven Updates**: Uses Azure Functions and queues for real-time feed refresh
+- **Cloud-Native Architecture**: Designed for Azure with managed identity authentication
+- **Local Development Support**: .NET Aspire orchestration for seamless development experience
 
-## Presentation Phases
+## Development Phases
 
-This repository contains five distinct phases, each demonstrating different Visual Studio and Azure capabilities. Each phase builds upon the previous one, showing the natural evolution of a modern .NET application.
+This repository demonstrates the progressive evolution of a .NET application through five distinct phases:
 
-### Phase 1 - The ReadR Web App's Starting Point
+### Phase 1 - Basic Web Application
 **Branch**: [`phase1-webapp-only`](https://github.com/bradygaster/ReadR/tree/phase1-webapp-only)
 
-**What it demonstrates**: Basic Blazor Server application with memory caching and RSS parsing capabilities.
+A simple Blazor Server application with:
+- Basic RSS feed display
+- Memory caching for performance
+- Hardcoded feed configurations
+- Azure App Service deployment capability
 
-#### Application Summary
-The Phase 1 application is a standalone Blazor Server app that:
-- Reads RSS feeds from a hardcoded list in the application
-- Uses memory caching to store feed entries and avoid excessive HTTP requests
-- Displays feeds in a categorized, responsive interface
-- Includes a favicon service and fallback icons for better visual presentation
-
-#### Demo Steps for Presenters
-1. **Show the application running locally**:
-   - Open the solution in Visual Studio
-   - Press F5 to run the application
-   - Demonstrate the feed categories and responsive layout
-   - Point out the memory caching behavior by refreshing pages
-
-2. **Highlight the code structure**:
-   - Show the `FileFeedSource.cs` with hardcoded feed lists
-   - Explain the memory caching implementation in `FeedCacheService.cs`
-   - Demonstrate the RSS parsing logic in `FeedParser.cs`
-
-3. **Deploy to Azure App Service**:
-   - Right-click the project in Solution Explorer
-   - Select "Publish..."
-   - Choose "Azure App Service (Linux)" or "Azure App Service (Windows)"
-   - Walk through the publish wizard to create a new App Service
-   - **Generate GitHub Actions Workflow**: When prompted, choose to generate a GitHub Actions workflow
-   - Explain that the generated workflow uses OIDC authentication (similar to `azd pipeline config`)
-   - Note: Upcoming Visual Studio updates will also support Azure DevOps Pipelines detection and generation
-
-4. **Key Teaching Points**:
-   - Memory caching prevents excessive HTTP requests to RSS feeds
-   - GitHub Actions workflow generation with OIDC authentication
-   - Azure App Service hosting for .NET applications
-   - Future Azure DevOps Pipelines support in Visual Studio
-
-### Phase 2 - Adding Azure Storage
+### Phase 2 - Azure Storage Integration
 **Branch**: [`phase2-storage`](https://github.com/bradygaster/ReadR/tree/phase2-storage)
 
-**What it demonstrates**: Azure Storage integration using Visual Studio Connected Services with managed identity authentication.
+Adds cloud storage capabilities:
+- Azure Blob Storage for feed list configuration
+- Managed identity authentication (no connection strings)
+- Visual Studio Connected Services integration
+- Shared library for common functionality
 
-#### Changes from Phase 1
-- Feed list configuration moved from hardcoded files to Azure Blob Storage
-- Added Azure Storage SDK integration
-- Implemented managed identity authentication (no connection strings!)
-- Extracted RSS parsing into a separate class library (`ReadR.Shared`)
-
-#### Demo Steps for Presenters
-1. **Add Azure Storage via Connected Services**:
-   - Right-click the project in Solution Explorer
-   - Select "Add" → "Connected Service"
-   - Choose "Azure Storage"
-   - Select or create a Storage Account in your Azure subscription
-   - **Key Point**: The wizard configures both your application code AND secures the Azure resource
-   - Notice no connection strings or secrets are stored in your project
-
-2. **Show the code changes**:
-   - Examine `AzureBlobFeedSource.cs` replacing `FileFeedSource.cs`
-   - Point out the use of `DefaultAzureCredential` for authentication
-   - Show how feed lists are now read from blob storage
-
-3. **Create the shared library**:
-   - Right-click solution → "Add" → "New Project" → "Class Library"
-   - Move RSS parsing logic to `ReadR.Shared`
-   - Add project reference from main app to shared library
-
-4. **Test with Azure Storage**:
-   - Upload a JSON feed list to the blob container
-   - Show how the application reads from Azure instead of local files
-   - Demonstrate the security model (no secrets in code or config)
-
-5. **Key Teaching Points**:
-   - Connected Services eliminates connection string management
-   - Managed identity provides secure, credential-free authentication
-   - Separation of concerns with shared libraries
-   - Azure Storage integration for configuration data
-
-### Phase 3 - Triggering Updates When Feed List Changes
+### Phase 3 - Event-Driven Architecture
 **Branch**: [`phase3-function-blob-trigger`](https://github.com/bradygaster/ReadR/tree/phase3-function-blob-trigger)
 
-**What it demonstrates**: Azure Functions integration with blob triggers and queue messaging for real-time updates.
+Introduces serverless processing:
+- Azure Functions with blob triggers
+- Queue messaging for decoupled communication
+- Background services for cache invalidation
+- Automatic feed refresh when configuration changes
 
-#### Changes from Phase 2
-- Added Azure Functions project with .NET 9 Isolated runtime
-- Implemented blob trigger to monitor feed list changes
-- Added Azure Queue Storage for messaging between components
-- Added background service in frontend to monitor queues and refresh cache
-
-#### Architecture with Functions
-```mermaid
-sequenceDiagram
-    participant User
-    participant Blob as Azure Blob Storage
-    participant Func as Azure Functions
-    participant Queue as Azure Queue
-    participant BG as Background Service
-    participant Cache as Memory Cache
-    participant Frontend as Frontend App
-
-    User->>Blob: Upload new feed list
-    Blob->>Func: Blob trigger fires
-    Func->>Queue: Send refresh message
-    Queue->>BG: Message received
-    BG->>Cache: Clear feed cache
-    BG->>Frontend: Signal refresh needed
-    Frontend->>Cache: Reload feeds
-    Cache->>Frontend: Fresh feed data
-```
-
-#### Demo Steps for Presenters
-1. **Add Azure Functions project**:
-   - Right-click solution → "Add" → "New Project"
-   - Choose "Azure Functions" (.NET 9 Isolated)
-   - Add the blob trigger function code
-
-2. **Configure the blob trigger**:
-   - Show `FeedListUpdateTrigger.cs` with blob trigger attribute
-   - Explain the connection to blob storage container
-   - Demonstrate the queue output binding
-
-3. **Add queue monitoring to frontend**:
-   - Show `QueueBackgroundService.cs` implementation
-   - Explain how it monitors Azure Queue Storage
-   - Demonstrate cache clearing when messages arrive
-
-4. **Deploy Functions to Azure**:
-   - Right-click Functions project → "Publish..."
-   - Choose deployment target (Functions on Windows/Linux, App Service Plan, or Flex)
-   - Generate GitHub Actions workflow for automated deployment
-   - Show integration with the main web app
-
-5. **Test the complete flow**:
-   - Upload a modified feed list to blob storage
-   - Watch function execution in Azure portal
-   - See queue message creation
-   - Observe frontend cache refresh
-   - Show updated feeds without redeployment
-
-6. **Key Teaching Points**:
-   - Event-driven architecture with Azure Functions
-   - Blob triggers for file monitoring
-   - Queue-based messaging for loose coupling
-   - Background services in ASP.NET Core
-   - No application redeployment needed for feed updates
-
-### Phase 4 - Adding Aspire
+### Phase 4 - Local Development Orchestration
 **Branch**: [`phase4-adding-aspire`](https://github.com/bradygaster/ReadR/tree/phase4-adding-aspire)
 
-**What it demonstrates**: .NET Aspire orchestration for improved local development experience and cloud-ready architecture.
+Improves development experience:
+- .NET Aspire orchestration for multi-service applications
+- Integrated dashboard for monitoring and debugging
+- Service discovery and dependency management
+- Simplified local development workflow
 
-#### Changes from Phase 3
-- Added Aspire AppHost project for orchestration
-- Added ServiceDefaults for common configurations
-- Integrated frontend and functions projects with Aspire
-- Added Azure resource bindings and role assignments
-- Enhanced development dashboard experience
-
-#### Demo Steps for Presenters
-1. **Add Aspire to the solution**:
-   - Right-click solution → "Add" → "New Project"
-   - Choose ".NET Aspire App Host"
-   - Add Aspire references to existing projects
-
-2. **Configure Aspire orchestration**:
-   - Show `AppHost.cs` with Azure Storage and project configurations
-   - Explain resource bindings and role assignments
-   - Demonstrate wait dependencies between services
-
-3. **Set up Connected Services for Aspire**:
-   - Click on Connected Services node in AppHost project
-   - Configure Azure subscription and resource group
-   - Show how Aspire manages Azure resource connections
-
-4. **Clear user secrets for clean demo**:
-   - Run commands to clear secrets from all projects:
-     ```bash
-     dotnet user-secrets clear --project ReadR.AppHost
-     dotnet user-secrets clear --project ReadR.Frontend  
-     dotnet user-secrets clear --project ReadR.Serverless
-     ```
-   - This ensures all configuration comes from Aspire topology
-
-5. **Demo the F5 experience**:
-   - Press F5 to start the entire solution
-   - Show the Aspire dashboard with all services
-   - Demonstrate service-to-service communication visualization
-   - Show logs and metrics from multiple services in one place
-
-6. **Key Teaching Points**:
-   - Single F5 experience for complex multi-service applications
-   - Visual service topology and communication flows
-   - Centralized logging and metrics dashboard
-   - Azure resource management through Aspire
-   - Foundation for Container Apps deployment
-
-### Phase 5 - Previewing Aspire Publishing Features
+### Phase 5 - Cloud Deployment
 **Branch**: [`phase5-deploying-with-aspire`](https://github.com/bradygaster/ReadR/tree/phase5-deploying-with-aspire)
 
-**What it demonstrates**: Azure deployment using `azd` (Azure Developer CLI) with infrastructure as code generation.
+Production deployment capabilities:
+- Azure Developer CLI (`azd`) support
+- Infrastructure as Code with Bicep templates
+- Azure Container Apps deployment
+- Production monitoring and logging
 
-#### Changes from Phase 4
-- Added `azure.yaml` for azd configuration
-- Configured Container Apps hosting
-- Added infrastructure generation capabilities
+## Getting Started
 
-#### Demo Steps for Presenters
-1. **Install Azure Developer CLI** (if not already installed):
-   ```bash
-   # Show installation if needed
-   curl -fsSL https://aka.ms/install-azd.sh | bash
-   ```
-
-2. **Initialize azd configuration**:
-   ```bash
-   azd init
-   ```
-   - Show the generated `azure.yaml` file
-   - Explain the service configuration pointing to AppHost
-
-3. **Generate Infrastructure as Code**:
-   ```bash
-   azd infra gen
-   ```
-   - Show the generated Bicep files in the `infra` folder
-   - Explain how Aspire topology becomes Azure infrastructure
-   - Demonstrate the `containerApp.tmpl.yaml` files
-
-4. **Deploy to Azure Container Apps**:
-   ```bash
-   azd up
-   ```
-   - Walk through the deployment process
-   - Show resources being created in Azure
-   - Access the deployed application
-
-5. **Set up CI/CD pipeline**:
-   ```bash
-   azd pipeline config
-   ```
-   - Choose GitHub or Azure DevOps
-   - Show generated workflow files
-   - Explain OIDC authentication setup
-
-6. **Important Notes for Functions**:
-   - Mention that Functions deployment with `azd` requires additional configuration
-   - This is an area of active development
-   - For production scenarios, consider separate Functions deployment
-
-7. **Key Teaching Points**:
-   - Infrastructure as Code generation from Aspire topology
-   - Container Apps as a deployment target
-   - Integrated CI/CD pipeline setup
-   - Azure Developer CLI as a unified deployment tool
-
-## Setup Script for Presenters
-
-To help presenters quickly set up their environment between sessions, setup scripts are provided that:
-- Clone all phase branches to separate directories
-- Clear user secrets from all projects
-- Prepare a clean demo environment
-
-### Running the Setup Script
-
-**For Linux/macOS (Bash):**
-```bash
-# Make the script executable
-chmod +x setup-demo.sh
-
-# Run the setup script
-./setup-demo.sh
-```
-
-**For Windows (PowerShell):**
-```powershell
-# Run the PowerShell script
-.\setup-demo.ps1
-```
-
-**What the script does:**
-1. Creates a `demo-phases` directory with separate folders for each phase
-2. Clones each phase branch to its own directory for easy switching
-3. Clears all user secrets from projects to ensure clean configuration
-4. Provides a clean slate for each demo iteration
-
-**After running the script, you'll have:**
-- `demo-phases/phase1-webapp-only/` - Starting point with basic web app
-- `demo-phases/phase2-storage/` - Adds Azure Storage integration
-- `demo-phases/phase3-function-blob-trigger/` - Adds Azure Functions
-- `demo-phases/phase4-adding-aspire/` - Adds .NET Aspire orchestration
-- `demo-phases/phase5-deploying-with-aspire/` - Adds azd deployment
-
-## Prerequisites for Presenters
+### Prerequisites
 
 - Visual Studio 2022 (latest version)
 - .NET 9 SDK
-- Azure subscription with appropriate permissions
-- Azure Developer CLI (`azd`)
-- Git command line tools
+- Azure subscription (for cloud features)
+- Docker Desktop (for Aspire development)
+
+### Running Locally
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/bradygaster/ReadR.git
+   cd ReadR
+   ```
+
+2. **Open in Visual Studio**:
+   - Open `ReadR.slnx` in Visual Studio 2022
+   - Ensure the Aspire workload is installed
+
+3. **Run with Aspire**:
+   - Set `ReadR.AppHost` as the startup project
+   - Press F5 to start all services
+   - The Aspire dashboard will open automatically
+
+### Deployment to Azure
+
+The application supports deployment via Azure Developer CLI:
+
+```bash
+azd init
+azd auth login
+azd up
+```
+
+This will provision all necessary Azure resources and deploy the application.
+
+## For Presenters
+
+If you're planning to present or demo this application, see the [Demo Cheat Sheet](demo-cheat-sheet.md) for detailed step-by-step instructions for each phase of the demonstration.
+
+Setup scripts are provided to quickly prepare demo environments:
+
+**Linux/macOS:**
+```bash
+chmod +x setup-demo.sh
+./setup-demo.sh
+```
+
+**Windows:**
+```powershell
+./setup-demo.ps1
+```
+
+## Project Structure
+
+```
+ReadR/
+├── ReadR.AppHost/              # Aspire orchestration project
+├── ReadR.Frontend/             # Blazor Server web application
+├── ReadR.Serverless/           # Azure Functions project
+├── ReadR.ServiceDefaults/      # Shared Aspire service configurations
+├── ReadR.Shared/               # Common models and services
+├── infra/                      # Bicep infrastructure templates
+├── demo-cheat-sheet.md         # Detailed presenter instructions
+├── setup-demo.sh               # Demo setup script (Linux/macOS)
+├── setup-demo.ps1              # Demo setup script (Windows)
+└── azure.yaml                  # Azure Developer CLI configuration
+```
+
+## Technologies Demonstrated
+
+- **Frontend**: Blazor Server, ASP.NET Core
+- **Backend**: Azure Functions, Background Services
+- **Storage**: Azure Blob Storage, Azure Queue Storage
+- **Authentication**: Managed Identity, DefaultAzureCredential
+- **Orchestration**: .NET Aspire
+- **Deployment**: Azure Developer CLI, Azure Container Apps
+- **Infrastructure**: Bicep templates, Infrastructure as Code
+- **Development**: Visual Studio 2022, Connected Services
 
 ## Additional Resources
 
@@ -372,4 +198,4 @@ chmod +x setup-demo.sh
 
 ## Contributing
 
-This repository is maintained for demonstration purposes. If you find issues or have suggestions for improving the demo experience, please open an issue or submit a pull request.
+This repository is primarily designed for demonstration purposes. If you have suggestions for improvements or find issues, please open an issue or submit a pull request.
