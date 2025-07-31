@@ -93,6 +93,43 @@ foreach ($phase in $Phases) {
 Set-Location $CurrentDir
 
 Write-Host ""
+Write-Host "☁️ Setting up Azure environment for phase4 demo..." -ForegroundColor Cyan
+Write-Host "=================================================" -ForegroundColor Cyan
+
+# Setup Azure environment for phase4
+$Phase4Dir = Join-Path $DemoDir "phase4-adding-aspire"
+if (Test-Path $Phase4Dir) {
+    Set-Location $Phase4Dir
+    Write-Host "🔧 Preparing Azure environment in phase4..." -ForegroundColor Blue
+    
+    # Check if azd is available
+    $azdCommand = Get-Command azd -ErrorAction SilentlyContinue
+    if ($azdCommand) {
+        Write-Host "📋 Creating new azd environment..." -ForegroundColor Blue
+        try {
+            azd env new readr-demo --subscription-prompt
+        } catch {
+            Write-Host "⚠️  azd env new failed or environment already exists" -ForegroundColor Yellow
+        }
+        
+        Write-Host "🚀 Deploying Azure resources..." -ForegroundColor Blue
+        try {
+            azd up
+            Write-Host "✅ Phase4 Azure environment ready for 'azd deploy [service]' demos" -ForegroundColor Green
+        } catch {
+            Write-Host "⚠️  azd up failed - you may need to configure authentication" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "⚠️  Azure Developer CLI (azd) not found. Please install azd to prepare phase4 environment." -ForegroundColor Yellow
+        Write-Host "    Visit: https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd" -ForegroundColor White
+    }
+    
+    Set-Location $CurrentDir
+} else {
+    Write-Host "⚠️  Phase4 directory not found. Skipping Azure environment setup." -ForegroundColor Yellow
+}
+
+Write-Host ""
 Write-Host "🎯 Demo Environment Ready!" -ForegroundColor Green
 Write-Host "========================" -ForegroundColor Green
 Write-Host ""
@@ -109,9 +146,10 @@ Write-Host "🎬 Presenter Notes:" -ForegroundColor Magenta
 Write-Host "=================" -ForegroundColor Magenta
 Write-Host "1. Each phase is in a separate directory for easy switching" -ForegroundColor White
 Write-Host "2. All user secrets have been cleared for clean demos" -ForegroundColor White
-Write-Host "3. Use 'git status' in each directory to verify clean state" -ForegroundColor White
-Write-Host "4. Start with phase1-webapp-only for the beginning of your demo" -ForegroundColor White
-Write-Host "5. Progress through phases in order to show evolution" -ForegroundColor White
+Write-Host "3. Azure environment has been prepared for phase4 'azd deploy [service]' demos" -ForegroundColor White
+Write-Host "4. Use 'git status' in each directory to verify clean state" -ForegroundColor White
+Write-Host "5. Start with phase1-webapp-only for the beginning of your demo" -ForegroundColor White
+Write-Host "6. Progress through phases in order to show evolution" -ForegroundColor White
 Write-Host ""
 Write-Host "💡 Quick Start:" -ForegroundColor Yellow
 $StartDir = Join-Path $DemoDir "phase1-webapp-only"

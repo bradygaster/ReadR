@@ -86,6 +86,35 @@ done
 cd "$CURRENT_DIR"
 
 echo ""
+echo "☁️ Setting up Azure environment for phase4 demo..."
+echo "================================================="
+
+# Setup Azure environment for phase4
+PHASE4_DIR="$DEMO_DIR/phase4-adding-aspire"
+if [ -d "$PHASE4_DIR" ]; then
+    cd "$PHASE4_DIR"
+    echo "🔧 Preparing Azure environment in phase4..."
+    
+    # Check if azd is available
+    if command -v azd &> /dev/null; then
+        echo "📋 Creating new azd environment..."
+        azd env new readr-demo --subscription-prompt || echo "⚠️  azd env new failed or environment already exists"
+        
+        echo "🚀 Deploying Azure resources..."
+        azd up || echo "⚠️  azd up failed - you may need to configure authentication"
+        
+        echo "✅ Phase4 Azure environment ready for 'azd deploy [service]' demos"
+    else
+        echo "⚠️  Azure Developer CLI (azd) not found. Please install azd to prepare phase4 environment."
+        echo "    Visit: https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd"
+    fi
+    
+    cd "$CURRENT_DIR"
+else
+    echo "⚠️  Phase4 directory not found. Skipping Azure environment setup."
+fi
+
+echo ""
 echo "🎯 Demo Environment Ready!"
 echo "========================"
 echo ""
@@ -101,9 +130,10 @@ echo "🎬 Presenter Notes:"
 echo "=================="
 echo "1. Each phase is in a separate directory for easy switching"
 echo "2. All user secrets have been cleared for clean demos"
-echo "3. Use 'git status' in each directory to verify clean state"
-echo "4. Start with phase1-webapp-only for the beginning of your demo"
-echo "5. Progress through phases in order to show evolution"
+echo "3. Azure environment has been prepared for phase4 'azd deploy [service]' demos"
+echo "4. Use 'git status' in each directory to verify clean state"
+echo "5. Start with phase1-webapp-only for the beginning of your demo"
+echo "6. Progress through phases in order to show evolution"
 echo ""
 echo "💡 Quick Start:"
 echo "  cd $DEMO_DIR/phase1-webapp-only"
