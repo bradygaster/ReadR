@@ -112,41 +112,67 @@ The demo shows 5 progressive phases:
      ```csharp
      private readonly BlobServiceClient _blobServiceClient;
      
-     public AzureBlobFeedSource(BlobServiceClient blobServiceClient)
+     public AzureBlobFeedSource(
+         IAzureClientFactory<BlobServiceClient> azureClientFactory,
+         ILogger<AzureBlobFeedSource> logger,
+         IConfiguration configuration)
      {
-         _blobServiceClient = blobServiceClient;
+         _blobServiceClient = azureClientFactory.CreateClient("readrstorage");
+         _logger = logger;
+         _containerName = configuration["Azure:Blob:FeedContainer"] ?? "feeds";
+         _blobName = configuration["Azure:Blob:FeedFileName"] ?? "feed-urls.txt";
      }
      ```
-   - Show how `DefaultAzureCredential` is used (configured by Connected Services)
+   - Show how `IAzureClientFactory` is used (configured by Connected Services)
    - Explain how feed lists are now read from blob storage instead of hardcoded files
 
-3. **Create the shared library** (if not already done):
-   - Right-click solution → "Add" → "New Project" → "Class Library"
-   - Name it `ReadR.Shared`
-   - **Show these specific files being moved**:
-     - `ReadR.Shared/Models/RssFeed.cs`
-     - `ReadR.Shared/Models/RssFeedItem.cs`
-     - `ReadR.Shared/Services/RssFeedService.cs`
+3. **Show the Azure client factory extensions**:
+   - **We added this file**: `ReadR.Frontend/AzureClientFactoryBuilderExtensions.cs`
+   - **Point out this extension pattern**:
+     ```csharp
+     internal static class AzureClientFactoryBuilderExtensions
+     {
+         public static IAzureClientBuilder<BlobServiceClient, BlobClientOptions> AddBlobServiceClient(
+             this AzureClientFactoryBuilder builder, 
+             string serviceUriOrConnectionString, 
+             bool preferMsi = true)
+         {
+             if (preferMsi && Uri.TryCreate(serviceUriOrConnectionString, UriKind.Absolute, out Uri? serviceUri))
+             {
+                 return builder.AddBlobServiceClient(serviceUri);
+             }
+             else
+             {
+                 return BlobClientBuilderExtensions.AddBlobServiceClient(builder, serviceUriOrConnectionString);
+             }
+         }
+     }
+     ```
 
 4. **Update Program.cs registrations**:
    - Open `ReadR.Frontend/Program.cs`
    - **Show these specific additions**:
      ```csharp
-     builder.AddAzureBlobClient("ReadRStorage");
-     builder.Services.AddTransient<IFeedSource, AzureBlobFeedSource>();
+     builder.Services.AddAzureClients(clientBuilder =>
+     {
+         clientBuilder.AddBlobServiceClient(builder.Configuration["readrstorage:blobServiceUri"]!).WithName("readrstorage");
+         clientBuilder.AddQueueServiceClient(builder.Configuration["readrstorage:queueServiceUri"]!).WithName("readrstorage");
+         clientBuilder.AddTableServiceClient(builder.Configuration["readrstorage:tableServiceUri"]!).WithName("readrstorage");
+     });
+     
+     builder.Services.AddSingleton<IFeedSource, AzureBlobFeedSource>();
      ```
 
 5. **Upload feed configuration**:
-   - Show Azure Storage Explorer or Azure Portal
-   - Upload a JSON file with feed lists to the blob container
-   - **Example JSON structure**:
-     ```json
-     {
-       "Technology": [
-         "https://devblogs.microsoft.com/dotnet/feed/",
-         "https://www.hanselman.com/blog/rss.xml"
-       ]
-     }
+   - Open the file already in the blob container in Storage Explorer, edit, and Save it back to the container
+   - **Example feed file structure** (markdown format):
+     ```
+     # Technology
+     https://devblogs.microsoft.com/dotnet/feed/
+     https://www.hanselman.com/blog/rss.xml
+     
+     # News
+     https://feeds.feedburner.com/oreilly/radar
      ```
 
 6. **Run and test**:
@@ -157,7 +183,6 @@ The demo shows 5 progressive phases:
 ### Key Teaching Points
 - Visual Studio Connected Services simplifies Azure integration
 - Managed identity eliminates connection string management
-- Separation of concerns with shared libraries
 - Azure Storage for scalable configuration management
 
 ---
@@ -230,7 +255,6 @@ The demo shows 5 progressive phases:
    - Open `ReadR.Frontend/Program.cs`
    - **Add these specific registrations**:
      ```csharp
-     builder.AddAzureQueueClient("ReadRStorage");
      builder.Services.AddHostedService<QueueMonitorService>();
      ```
 
@@ -274,10 +298,10 @@ The demo shows 5 progressive phases:
 ### Demo Script
 
 1. **Add Aspire orchestration project**:
-   - Right-click solution → "Add" → "New Project"
-   - Choose ".NET Aspire App Host" template
-   - Name it `ReadR.AppHost`
-   - Also add ".NET Aspire Service Defaults" project as `ReadR.ServiceDefaults`
+   - Right-click on the `ReadR.Frontend` project in Solution Explorer
+   - Select "Add" → "Aspire Orchestration..."
+   - This will create both the AppHost and ServiceDefaults projects automatically
+   - For more information on this feature, see: https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/setup-tooling?tabs=windows&pivots=visual-studio#add-orchestration-projects
 
 2. **Configure the AppHost**:
    - Open `ReadR.AppHost/Program.cs`
@@ -299,19 +323,10 @@ The demo shows 5 progressive phases:
      builder.Build().Run();
      ```
 
-3. **Update service defaults in all projects**:
-   - **Add to each project file**:
-     ```xml
-     <ProjectReference Include="..\ReadR.ServiceDefaults\ReadR.ServiceDefaults.csproj" />
-     ```
-   - **Update Program.cs in each service**:
-     ```csharp
-     builder.AddServiceDefaults(); // Add this line
-     ```
-
-4. **Set AppHost as startup project**:
+3. **Set AppHost as startup project** (may be needed):
    - Right-click `ReadR.AppHost` in Solution Explorer
    - Select "Set as Startup Project"
+   - **Note**: Visual Studio's orchestration feature may set this automatically
 
 5. **Run with Aspire orchestration**:
    - Press F5 to start all services
