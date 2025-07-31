@@ -15,22 +15,12 @@ var blobs = readrstorage.AddBlobs("blobs");
 // front end project
 var frontend = builder.AddProject<Projects.ReadR_Frontend>("frontend")
                       .WithReference(queues)
-                      .WithReference(blobs)
-                      .WithRoleAssignments(readrstorage,
-                           StorageBuiltInRole.StorageBlobDataOwner,
-                           StorageBuiltInRole.StorageQueueDataContributor);
+                      .WithReference(blobs);
 
 // functions project
 var functions = builder.AddAzureFunctionsProject<Projects.ReadR_Serverless>("functions")
                        .WithHostStorage(webJobsStorage)
                        .WithReference(queues)
-                       .WithReference(blobs)
-                       .WithRoleAssignments(webJobsStorage,
-                            StorageBuiltInRole.StorageBlobDataOwner,
-                            StorageBuiltInRole.StorageQueueDataContributor,
-                            StorageBuiltInRole.StorageTableDataContributor)
-                       .WithRoleAssignments(readrstorage,
-                            StorageBuiltInRole.StorageBlobDataOwner,
-                            StorageBuiltInRole.StorageQueueDataContributor);
+                       .WithReference(blobs);
 
 builder.Build().Run();
