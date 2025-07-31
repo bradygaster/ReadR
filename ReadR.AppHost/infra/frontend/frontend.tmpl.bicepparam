@@ -1,0 +1,12 @@
+using './frontend.module.bicep'
+
+param frontend_containerimage = '{{ .Image }}'
+param frontend_containerport = '{{ targetPortOrDefault 8080 }}'
+param frontend_identity_outputs_clientid = '{{ .Env.FRONTEND_IDENTITY_CLIENTID }}'
+param frontend_identity_outputs_id = '{{ .Env.FRONTEND_IDENTITY_ID }}'
+param readrappserviceenvironment_outputs_azure_container_registry_endpoint = '{{ .Env.READRAPPSERVICEENVIRONMENT_AZURE_CONTAINER_REGISTRY_ENDPOINT }}'
+param readrappserviceenvironment_outputs_azure_container_registry_managed_identity_client_id = '{{ .Env.READRAPPSERVICEENVIRONMENT_AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_CLIENT_ID }}'
+param readrappserviceenvironment_outputs_azure_container_registry_managed_identity_id = '{{ .Env.READRAPPSERVICEENVIRONMENT_AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID }}'
+param readrappserviceenvironment_outputs_planid = '{{ .Env.READRAPPSERVICEENVIRONMENT_PLANID }}'
+param readrstorage_outputs_blobendpoint = '{{ .Env.READRSTORAGE_BLOBENDPOINT }}'
+param readrstorage_outputs_queueendpoint = '{{ .Env.READRSTORAGE_QUEUEENDPOINT }}'
