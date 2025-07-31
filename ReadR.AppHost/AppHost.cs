@@ -14,6 +14,7 @@ var blobs = readrstorage.AddBlobs("blobs");
 
 // front end project
 var frontend = builder.AddProject<Projects.ReadR_Frontend>("frontend")
+                      .WithExternalHttpEndpoints()
                       .WithReference(queues)
                       .WithReference(blobs);
 
