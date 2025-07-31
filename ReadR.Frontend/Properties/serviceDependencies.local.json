@@ -4,12 +4,11 @@
       "type": "secrets.user"
     },
     "storage1": {
-      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourcegroups/[parameters('serviceConnectorResourceGroupName')]/providers/Microsoft.ServiceLinker/locations/westus/connectors/readrstorage_6D0289B00D, /subscriptions/1136a23b-ebc0-4c06-992a-2c343fcdce4b/resourcegroups/readrdev20250728/providers/Microsoft.ServiceLinker/locations/westus/connectors/readrstorage_42F0810F9C",
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('serviceConnectorResourceGroupName')]/providers/Microsoft.ServiceLinker/locations/westus/connectors/readrstorage_6D0289B00D, /subscriptions/1136a23b-ebc0-4c06-992a-2c343fcdce4b/resourceGroups/readr20250730/providers/Microsoft.ServiceLinker/locations/westus/connectors/readrstorage_42F0810F9C",
       "secretStore": "LocalSecretsFile",
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourcegroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/readrstorage20250728",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/readrstorageixew3qafeerr",
       "type": "storage.azure",
-      "connectionId": "readrstorage",
-      "dynamicId": null
+      "connectionId": "readrstorage"
     }
   }
 }

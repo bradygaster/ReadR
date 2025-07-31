@@ -2,18 +2,26 @@ using Azure.Provisioning.Storage;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
+// App Service environment
+builder.AddAzureAppServiceEnvironment("ReadRAppServiceEnvironment");
+
 // connections for the storage accounts
 var readrstorage = builder.AddAzureStorage("readrstorage")
-                          .RunAsEmulator();
+                          //.RunAsEmulator()
+                          ;
 
 var webJobsStorage = builder.AddAzureStorage("AzureWebJobsStorage")
-                            .RunAsEmulator();
+                            //.RunAsEmulator()
+                            ;
 
 var queues = readrstorage.AddQueues("queues");
 var blobs = readrstorage.AddBlobs("blobs");
 
 // front end project
 var frontend = builder.AddProject<Projects.ReadR_Frontend>("frontend")
+                      .WithExternalHttpEndpoints()
+                      .WaitFor(queues)
+                      .WaitFor(blobs)
                       .WithReference(queues)
                       .WithReference(blobs)
                       .WithRoleAssignments(readrstorage,
@@ -22,7 +30,10 @@ var frontend = builder.AddProject<Projects.ReadR_Frontend>("frontend")
 
 // functions project
 var functions = builder.AddAzureFunctionsProject<Projects.ReadR_Serverless>("functions")
+                       .WithExternalHttpEndpoints()
                        .WithHostStorage(webJobsStorage)
+                       .WaitFor(queues)
+                       .WaitFor(blobs)
                        .WithReference(queues)
                        .WithReference(blobs)
                        .WithRoleAssignments(webJobsStorage,
