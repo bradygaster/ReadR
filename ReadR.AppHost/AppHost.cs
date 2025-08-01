@@ -3,7 +3,7 @@ using Azure.Provisioning.Storage;
 var builder = DistributedApplication.CreateBuilder(args);
 
 // Add the Azure Container App environment
-builder.AddAzureContainerAppEnvironment("rdrenvironment");
+builder.AddAzureContainerAppEnvironment("readracaenv");
 
 // Add the Azure Application Insights environment
 var readrinsights = builder.AddAzureApplicationInsights("readrinsights");
