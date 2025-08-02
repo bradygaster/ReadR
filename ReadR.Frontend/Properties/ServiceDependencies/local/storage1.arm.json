@@ -4,7 +4,7 @@
   "parameters": {
     "resourceGroupName": {
       "type": "string",
-      "defaultValue": "readr20250730",
+      "defaultValue": "readrdev20250802001",
       "metadata": {
         "_parameterType": "resourceGroup",
         "description": "Name of the resource group for the resource. It is recommended to put resources under same resource group for better tracking."
@@ -53,8 +53,9 @@
                 "name": "Standard_GRS",
                 "tier": "Standard"
               },
-              "kind": "StorageV2",
-              "name": "readrstorageixew3qafeerr",
+              "kind": "Storage",
+              "name": "readrfrontendstorage",
+
               "type": "Microsoft.Storage/storageAccounts",
               "location": "[parameters('resourceLocation')]",
               "apiVersion": "2017-10-01"
