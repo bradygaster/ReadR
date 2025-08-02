@@ -5,7 +5,12 @@
     },
     "storage1": {
       "type": "storage",
-      "connectionId": "readrstorage",
+      "connectionId": "readrblobs",
+      "dynamicId": null
+    },
+    "storage2": {
+      "type": "storage",
+      "connectionId": "readrqueues",
       "dynamicId": null
     }
   }

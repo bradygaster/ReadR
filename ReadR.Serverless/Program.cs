@@ -15,7 +15,7 @@ builder.ConfigureFunctionsWebApplication();
 builder.Services.AddSingleton(serviceProvider =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    var connectionString = configuration.GetConnectionString("readrstorage");
+    var connectionString = configuration.GetConnectionString("readrqueues");
     return new QueueServiceClient(connectionString);
 });
 

@@ -18,9 +18,12 @@ builder.Services.AddHttpClient<FeedParser>(client =>
 
 builder.Services.AddAzureClients(clientBuilder =>
 {
-    clientBuilder.AddBlobServiceClient(builder.Configuration["readrstorage:blobServiceUri"]!).WithName("readrstorage");
-    clientBuilder.AddQueueServiceClient(builder.Configuration["readrstorage:queueServiceUri"]!).WithName("readrstorage");
-    clientBuilder.AddTableServiceClient(builder.Configuration["readrstorage:tableServiceUri"]!).WithName("readrstorage");
+    clientBuilder.AddBlobServiceClient(builder.Configuration["readrblobs:blobServiceUri"]!).WithName("readrblobs");
+    clientBuilder.AddQueueServiceClient(builder.Configuration["readrblobs:queueServiceUri"]!).WithName("readrblobs");
+    clientBuilder.AddTableServiceClient(builder.Configuration["readrblobs:tableServiceUri"]!).WithName("readrblobs");
+    clientBuilder.AddBlobServiceClient(builder.Configuration["readrqueues:blobServiceUri"]!).WithName("readrqueues");
+    clientBuilder.AddQueueServiceClient(builder.Configuration["readrqueues:queueServiceUri"]!).WithName("readrqueues");
+    clientBuilder.AddTableServiceClient(builder.Configuration["readrqueues:tableServiceUri"]!).WithName("readrqueues");
 });
 
 // Register feed source service

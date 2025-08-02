@@ -1,21 +1,28 @@
 {
   "dependencies": {
-    "appInsights1": {
-      "type": "appInsights.sdk"
-    },
-    "storage1": {
-      "type": "storage.emulator",
-      "connectionId": "AzureWebJobsStorage"
-    },
-    "secrets1": {
+    "secrets2": {
       "type": "secrets.user"
     },
-    "storage2": {
-      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('serviceConnectorResourceGroupName')]/providers/Microsoft.ServiceLinker/locations/westus/connectors/readrstorage_6D0289B00D, /subscriptions/1136a23b-ebc0-4c06-992a-2c343fcdce4b/resourceGroups/readrdev20250728/providers/Microsoft.ServiceLinker/locations/westus/connectors/readrstorage_42F0810F9C",
+    "storage1": {
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('serviceConnectorResourceGroupName')]/providers/Microsoft.ServiceLinker/locations/westus/connectors/AzureWebJobsStorage_0DF076A081, /subscriptions/1136a23b-ebc0-4c06-992a-2c343fcdce4b/resourceGroups/readrdev20250802001/providers/Microsoft.ServiceLinker/locations/westus/connectors/AzureWebJobsStorage_092F414AB9",
       "secretStore": "LocalSecretsFile",
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/readrstorage20250728",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/readrfrontendstorage",
       "type": "storage.azure",
-      "connectionId": "readrstorage",
+      "connectionId": "AzureWebJobsStorage",
+      "dynamicId": null
+    },
+    "storage2": {
+      "secretStore": "LocalSecretsFile",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/readrfrontendstorage",
+      "type": "storage.azure",
+      "connectionId": "readrblobs",
+      "dynamicId": null
+    },
+    "storage3": {
+      "secretStore": "LocalSecretsFile",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/readrfrontendstorage",
+      "type": "storage.azure",
+      "connectionId": "readrqueues",
       "dynamicId": null
     }
   }
