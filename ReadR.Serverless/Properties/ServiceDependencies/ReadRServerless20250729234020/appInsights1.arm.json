@@ -4,7 +4,7 @@
   "parameters": {
     "resourceGroupName": {
       "type": "string",
-      "defaultValue": "readrdev20250802001",
+      "defaultValue": "readrdev20250728",
       "metadata": {
         "_parameterType": "resourceGroup",
         "description": "Name of the resource group for the resource. It is recommended to put resources under same resource group for better tracking."
@@ -36,7 +36,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "name": "[concat(parameters('resourceGroupName'), 'Deployment', uniqueString(concat('readrstorageixew3qafeerr', subscription().subscriptionId)))]",
+      "name": "[concat(parameters('resourceGroupName'), 'Deployment', uniqueString(concat('ReadRServerless', subscription().subscriptionId)))]",
       "resourceGroup": "[parameters('resourceGroupName')]",
       "apiVersion": "2019-10-01",
       "dependsOn": [
@@ -49,16 +49,12 @@
           "contentVersion": "1.0.0.0",
           "resources": [
             {
-              "sku": {
-                "name": "Standard_GRS",
-                "tier": "Standard"
-              },
-              "kind": "Storage",
-              "name": "readrfrontendstorage",
-
-              "type": "Microsoft.Storage/storageAccounts",
+              "kind": "web",
+              "name": "ReadRServerless",
+              "type": "microsoft.insights/components",
               "location": "[parameters('resourceLocation')]",
-              "apiVersion": "2017-10-01"
+              "properties": {},
+              "apiVersion": "2015-05-01"
             }
           ]
         }
@@ -66,6 +62,6 @@
     }
   ],
   "metadata": {
-    "_dependencyType": "storage.azure"
+    "_dependencyType": "appInsights.azure"
   }
 }

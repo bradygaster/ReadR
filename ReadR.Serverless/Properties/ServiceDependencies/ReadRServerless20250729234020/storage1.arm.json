@@ -4,7 +4,7 @@
   "parameters": {
     "resourceGroupName": {
       "type": "string",
-      "defaultValue": "readrdev20250802001",
+      "defaultValue": "DefaultResourceGroup-WUS",
       "metadata": {
         "_parameterType": "resourceGroup",
         "description": "Name of the resource group for the resource. It is recommended to put resources under same resource group for better tracking."
@@ -36,7 +36,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "name": "[concat(parameters('resourceGroupName'), 'Deployment', uniqueString(concat('readrstorageixew3qafeerr', subscription().subscriptionId)))]",
+      "name": "[concat(parameters('resourceGroupName'), 'Deployment', uniqueString(concat('aspnetcoreapiwithstorage', subscription().subscriptionId)))]",
       "resourceGroup": "[parameters('resourceGroupName')]",
       "apiVersion": "2019-10-01",
       "dependsOn": [
@@ -50,12 +50,11 @@
           "resources": [
             {
               "sku": {
-                "name": "Standard_GRS",
+                "name": "Standard_LRS",
                 "tier": "Standard"
               },
               "kind": "Storage",
-              "name": "readrfrontendstorage",
-
+              "name": "aspnetcoreapiwithstorage",
               "type": "Microsoft.Storage/storageAccounts",
               "location": "[parameters('resourceLocation')]",
               "apiVersion": "2017-10-01"

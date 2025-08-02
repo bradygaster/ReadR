@@ -1,4 +1,4 @@
-name: Build and deploy .NET Core application to Web App readrdev
+name: Build & Deploy Front End
 on:
   workflow_dispatch:
   

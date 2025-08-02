@@ -13,7 +13,7 @@ public class AzureBlobFeedSource : IFeedSource
     private readonly string _blobName;
 
     public AzureBlobFeedSource(
-        IAzureClientFactory<BlobServiceClient> azureClientFactory,
+        BlobServiceClient blobServiceClient,
         ILogger<AzureBlobFeedSource> logger,
         IConfiguration configuration)
     {
