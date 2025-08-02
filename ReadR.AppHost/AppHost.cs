@@ -10,10 +10,12 @@ var readrinsights = builder.AddAzureApplicationInsights("readrinsights");
 
 // Add all the Azure Storage accounts
 var readrstorage = builder.AddAzureStorage("readrstorage")
-                          .RunAsEmulator();
+                          //.RunAsEmulator()
+                          ;
 
 var webJobsStorage = builder.AddAzureStorage("AzureWebJobsStorage")
-                            .RunAsEmulator();
+                            //.RunAsEmulator()
+                            ;
 
 var queues = readrstorage.AddQueues("queues");
 var blobs = readrstorage.AddBlobs("blobs");
@@ -21,6 +23,8 @@ var blobs = readrstorage.AddBlobs("blobs");
 // front end project
 var frontend = builder.AddProject<Projects.ReadR_Frontend>("frontend")
                       .WithExternalHttpEndpoints()
+                      .WaitFor(queues)
+                      .WaitFor(blobs)
                       .WithReference(queues)
                       .WithReference(blobs)
                       .WithReference(readrinsights)
@@ -38,6 +42,8 @@ var frontend = builder.AddProject<Projects.ReadR_Frontend>("frontend")
 // functions project
 var functions = builder.AddAzureFunctionsProject<Projects.ReadR_Serverless>("functions")
                        .WithHostStorage(webJobsStorage)
+                       .WaitFor(queues)
+                       .WaitFor(blobs)
                        .WithReference(queues)
                        .WithReference(blobs)
                        .WithReference(readrinsights)
