@@ -26,4 +26,8 @@
     <ProjectReference Include="..\ReadR.Shared\ReadR.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Properties\ServiceDependencies\local\" />
+  </ItemGroup>
+
 </Project>
