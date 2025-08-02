@@ -30,7 +30,7 @@ public class QueueBackgroundService : BackgroundService
         try
         {
             // Initialize the queue client
-            var queueServiceClient = _queueClientFactory.CreateClient("readrstorage");
+            var queueServiceClient = _queueClientFactory.CreateClient("readrqueues");
             var queueName = _configuration["QueueSettings:FeedRefreshQueueName"] ?? "feed-refresh";
             _queueClient = queueServiceClient.GetQueueClient(queueName);
 

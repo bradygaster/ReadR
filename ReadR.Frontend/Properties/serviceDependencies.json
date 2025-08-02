@@ -3,9 +3,15 @@
     "secrets1": {
       "type": "secrets"
     },
+    "storage2": {
+      "type": "storage",
+      "connectionId": "readrqueues",
+      "dynamicId": null
+    },
     "storage1": {
       "type": "storage",
-      "connectionId": "readrstorage"
+      "connectionId": "readrblobs",
+      "dynamicId": null
     }
   }
 }
