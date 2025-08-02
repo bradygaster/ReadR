@@ -2,10 +2,13 @@ using Azure.Provisioning.Storage;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-// App Service environment
-builder.AddAzureAppServiceEnvironment("ReadRAppServiceEnvironment");
+// Add the Azure Container App environment
+builder.AddAzureContainerAppEnvironment("readracaenv");
 
-// connections for the storage accounts
+// Add the Azure Application Insights environment
+var readrinsights = builder.AddAzureApplicationInsights("readrinsights");
+
+// Add all the Azure Storage accounts
 var readrstorage = builder.AddAzureStorage("readrstorage")
                           //.RunAsEmulator()
                           ;
@@ -24,24 +27,35 @@ var frontend = builder.AddProject<Projects.ReadR_Frontend>("frontend")
                       .WaitFor(blobs)
                       .WithReference(queues)
                       .WithReference(blobs)
+                      .WithReference(readrinsights)
                       .WithRoleAssignments(readrstorage,
-                           StorageBuiltInRole.StorageBlobDataOwner,
-                           StorageBuiltInRole.StorageQueueDataContributor);
+                            StorageBuiltInRole.StorageBlobDataOwner,
+                            StorageBuiltInRole.StorageQueueDataContributor,
+                            StorageBuiltInRole.StorageAccountContributor)
+                      .WithRoleAssignments(webJobsStorage,
+                            StorageBuiltInRole.StorageBlobDataOwner,
+                            StorageBuiltInRole.StorageQueueDataContributor)
+                      .PublishAsAzureContainerApp((resource, containerApp) =>
+                      {
+                      });
 
 // functions project
 var functions = builder.AddAzureFunctionsProject<Projects.ReadR_Serverless>("functions")
-                       .WithExternalHttpEndpoints()
                        .WithHostStorage(webJobsStorage)
                        .WaitFor(queues)
                        .WaitFor(blobs)
                        .WithReference(queues)
                        .WithReference(blobs)
-                       .WithRoleAssignments(webJobsStorage,
-                            StorageBuiltInRole.StorageBlobDataOwner,
-                            StorageBuiltInRole.StorageQueueDataContributor,
-                            StorageBuiltInRole.StorageTableDataContributor)
+                       .WithReference(readrinsights)
                        .WithRoleAssignments(readrstorage,
                             StorageBuiltInRole.StorageBlobDataOwner,
-                            StorageBuiltInRole.StorageQueueDataContributor);
+                            StorageBuiltInRole.StorageQueueDataContributor,
+                            StorageBuiltInRole.StorageAccountContributor)
+                       .WithRoleAssignments(webJobsStorage,
+                            StorageBuiltInRole.StorageBlobDataOwner,
+                            StorageBuiltInRole.StorageQueueDataContributor)
+                       .PublishAsAzureContainerApp((resource, containerApp) =>
+                       {
+                       });
 
 builder.Build().Run();

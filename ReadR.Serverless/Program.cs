@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Azure.Storage.Queues;
 using System.Reflection;
+using Microsoft.Azure.Functions.Worker;
 
 var builder = FunctionsApplication.CreateBuilder(args);
 
@@ -21,8 +22,8 @@ builder.Services.AddSingleton(serviceProvider =>
     return new QueueServiceClient(connectionString);
 });
 
-//builder.Services
-//    .AddApplicationInsightsTelemetryWorkerService()
-//    .ConfigureFunctionsApplicationInsights();
+builder.Services
+    .AddApplicationInsightsTelemetryWorkerService()
+    .ConfigureFunctionsApplicationInsights();
 
 builder.Build().Run();
