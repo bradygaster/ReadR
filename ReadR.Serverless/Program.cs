@@ -1,10 +1,10 @@
+using Azure.Storage.Queues;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Azure.Storage.Queues;
+using Microsoft.Extensions.Hosting;
 using System.Reflection;
-using Microsoft.Azure.Functions.Worker;
 
 var builder = FunctionsApplication.CreateBuilder(args);
 

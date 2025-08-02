@@ -7,12 +7,6 @@ builder.AddServiceDefaults();
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
-// Add application insights
-builder.Services.AddApplicationInsightsTelemetry(options =>
-{
-    options.ConnectionString = builder.Configuration.GetConnectionString("readrinsights");
-});
-
 // Add Azure Storage configuration
 builder.AddAzureBlobServiceClient("blobs");
 builder.AddAzureQueueServiceClient("queues");
