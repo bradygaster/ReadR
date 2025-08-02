@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Azure;
 using ReadR.Frontend.Services;
 using ReadR.Shared.Services;
 
@@ -6,16 +7,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-
-// Add application insights
-builder.Services.AddApplicationInsightsTelemetry(options =>
-{
-    options.ConnectionString = builder.Configuration.GetConnectionString("readrinsights");
-});
-
-// Add Azure Storage configuration
-builder.AddAzureBlobServiceClient("blobs");
-builder.AddAzureQueueServiceClient("queues");
 
 // Add memory cache
 builder.Services.AddMemoryCache();
@@ -32,9 +23,13 @@ builder.Services.AddAzureClients(clientBuilder =>
     clientBuilder.AddBlobServiceClient(builder.Configuration["readrblobs:blobServiceUri"]!).WithName("readrblobs");
     clientBuilder.AddQueueServiceClient(builder.Configuration["readrblobs:queueServiceUri"]!).WithName("readrblobs");
     clientBuilder.AddTableServiceClient(builder.Configuration["readrblobs:tableServiceUri"]!).WithName("readrblobs");
+    clientBuilder.AddBlobServiceClient(builder.Configuration["readrqueues:blobServiceUri"]!).WithName("readrqueues");
+    clientBuilder.AddQueueServiceClient(builder.Configuration["readrqueues:queueServiceUri"]!).WithName("readrqueues");
+    clientBuilder.AddTableServiceClient(builder.Configuration["readrqueues:tableServiceUri"]!).WithName("readrqueues");
 });
 
 // Register feed source service
+// builder.Services.AddSingleton<IFeedSource, FileFeedSource>();
 builder.Services.AddSingleton<IFeedSource, AzureBlobFeedSource>();
 
 // Register feed parser service
@@ -43,7 +38,6 @@ builder.Services.AddScoped<IFeedParser, FeedParser>();
 // Add new cache and page services
 builder.Services.AddScoped<IFeedCacheService, FeedCacheService>();
 builder.Services.AddScoped<IHomePageService, HomePageService>();
-builder.Services.AddScoped<IQueueService, QueueService>();
 
 // Add background service for queue monitoring
 builder.Services.AddHostedService<QueueBackgroundService>();
