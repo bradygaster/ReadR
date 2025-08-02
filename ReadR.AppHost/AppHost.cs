@@ -30,6 +30,7 @@ var functions = builder.AddAzureFunctionsProject<Projects.ReadR_Serverless>("fun
 
 // front end project
 var frontend = builder.AddProject<Projects.ReadR_Frontend>("frontend")
+                      .WithExternalHttpEndpoints()
                       .WaitFor(readrqueues)
                       .WaitFor(readrblobs)
                       .WaitFor(functions)
