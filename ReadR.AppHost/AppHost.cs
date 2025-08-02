@@ -2,11 +2,11 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 // Add all the Azure Storage accounts
 var readrstorage = builder.AddAzureStorage("readrstorage")
-                          //.RunAsEmulator()
+                          .RunAsEmulator()
                           ;
 
 var webJobsStorage = builder.AddAzureStorage("AzureWebJobsStorage")
-                            //.RunAsEmulator()
+                            .RunAsEmulator()
                             ;
 
 var queues = readrstorage.AddQueues("queues");
