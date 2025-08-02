@@ -33,7 +33,6 @@ builder.Services.AddScoped<IFeedParser, FeedParser>();
 // Add new cache and page services
 builder.Services.AddScoped<IFeedCacheService, FeedCacheService>();
 builder.Services.AddScoped<IHomePageService, HomePageService>();
-builder.Services.AddScoped<IQueueService, QueueService>();
 
 // Add background service for queue monitoring
 builder.Services.AddHostedService<QueueBackgroundService>();
@@ -50,19 +49,5 @@ app.UseHttpsRedirection();
 app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<ReadR.Frontend.Components.App>().AddInteractiveServerRenderMode();
-
-// provide an endpoint to refresh the feed cache
-app.MapGet("/api/cache/refresh", async (IFeedCacheService feedCacheService) =>
-{
-    await feedCacheService.RefreshCacheAsync();
-    return Results.Ok($"Feeds refreshed successfully at {DateTime.UtcNow}.");
-});
-
-// provide an endpoint to trigger a queue message for feed refresh
-app.MapPost("/api/queue/refresh", async (IQueueService queueService) =>
-{
-    await queueService.SendFeedRefreshMessageAsync();
-    return Results.Ok($"Feed refresh message sent to queue at {DateTime.UtcNow}.");
-});
 
 app.Run();
