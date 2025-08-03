@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
     <UserSecretsId>6cfb9f7d-a19e-4bf8-8d8b-291c704d34f5</UserSecretsId>
   </PropertyGroup>
+
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Azure.Data.Tables" Version="12.10.0" />
@@ -23,6 +24,7 @@
     <PackageReference Include="Microsoft.Extensions.Azure" Version="1.11.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.3" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\ReadR.ServiceDefaults\ReadR.ServiceDefaults.csproj" />
   </ItemGroup>
