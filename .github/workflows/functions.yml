@@ -5,7 +5,7 @@ permissions:
   id-token: write
   contents: read
 env:
-  AZURE_FUNCTIONAPP_NAME: ReadRServerless20250729234020
+  AZURE_FUNCTIONAPP_NAME: ${{ vars.function_RESOURCE_NAME }}
   AZURE_FUNCTIONAPP_PACKAGE_PATH: ReadR.Serverless/published
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 9.0.x
@@ -48,9 +48,9 @@ jobs:
     - name: Azure Login
       uses: azure/login@v2
       with:
-        client-id: ${{ vars.ReadRServerless20250729234020_CLIENT_ID_F155 }}
-        tenant-id: ${{ vars.ReadRServerless20250729234020_TENANT_ID_F155 }}
-        subscription-id: ${{ vars.ReadRServerless20250729234020_SUBSCRIPTION_ID_F155 }}
+        client-id: ${{ vars.function__CLIENT_ID }}
+        tenant-id: ${{ vars.function_TENANT_ID }}
+        subscription-id: ${{ vars.function_SUBSCRIPTION_ID }}
     - name: Deploy to Azure Function App
       uses: Azure/functions-action@v1
       with:
