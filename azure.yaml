@@ -1,8 +1,0 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
-
-name: readr-frontend
-services:  
-  app:
-    language: dotnet
-    project: ./ReadR.AppHost/ReadR.AppHost.csproj
-    host: containerapp
