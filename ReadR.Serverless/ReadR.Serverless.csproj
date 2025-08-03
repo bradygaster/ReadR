@@ -7,11 +7,7 @@
     <Nullable>enable</Nullable>
     <UserSecretsId>6cfb9f7d-a19e-4bf8-8d8b-291c704d34f5</UserSecretsId>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Properties\ServiceDependencies\**" />
-    <EmbeddedResource Remove="Properties\ServiceDependencies\**" />
-    <None Remove="Properties\ServiceDependencies\**" />
-  </ItemGroup>
+	
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Azure.Data.Tables" Version="12.10.0" />
