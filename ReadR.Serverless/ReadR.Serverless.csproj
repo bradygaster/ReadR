@@ -26,8 +26,4 @@
   <ItemGroup>
     <ProjectReference Include="..\ReadR.ServiceDefaults\ReadR.ServiceDefaults.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\ServiceDependencies\local\" />
-    <Folder Include="Properties\ServiceDependencies\ReadRServerless20250729234020\" />
-  </ItemGroup>
 </Project>
