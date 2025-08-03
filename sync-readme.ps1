@@ -68,6 +68,10 @@ if (-not (Test-Path $readmePath)) {
 Write-Host "📖 Reading README.md content from main branch..." -ForegroundColor Green
 $readmeContent = Get-Content $readmePath -Raw
 
+# Clean up remote tracking branches that no longer exist
+Write-Host "🧹 Cleaning up stale remote tracking branches..." -ForegroundColor Green
+git remote prune origin | Out-Null
+
 # Get all branches (local and remote)
 Write-Host "🔍 Discovering all branches..." -ForegroundColor Green
 $allBranches = git branch -a | ForEach-Object { $_.Trim() } | Where-Object { 
@@ -78,11 +82,15 @@ $allBranches = git branch -a | ForEach-Object { $_.Trim() } | Where-Object {
     $_ -notmatch '^remotes/origin/main$'
 }
 
-# Clean up branch names and remove duplicates
+# Clean up branch names and verify they exist
 $branches = @()
+$localBranches = git branch | ForEach-Object { $_.Trim() -replace '^\* ', '' -replace '^  ', '' }
+$remoteBranches = git branch -r | ForEach-Object { ($_.Trim() -replace '^origin/', '') } | Where-Object { $_ -ne 'HEAD' -and $_ -ne 'main' }
+
 foreach ($branch in $allBranches) {
     $cleanBranch = $branch -replace '^remotes/origin/', ''
     $cleanBranch = $cleanBranch -replace '^\* ', ''
+    $cleanBranch = $cleanBranch -replace '^  ', ''
     
     # Skip if branch is in exclude list
     if ($ExcludeBranches -contains $cleanBranch) {
@@ -90,7 +98,19 @@ foreach ($branch in $allBranches) {
         continue
     }
     
-    if ($branches -notcontains $cleanBranch) {
+    # Only include branches that exist locally or have valid remote tracking
+    $branchExists = $false
+    if ($localBranches -contains $cleanBranch) {
+        $branchExists = $true
+    } elseif ($remoteBranches -contains $cleanBranch) {
+        # Verify the remote branch actually exists
+        $remoteCheck = git ls-remote --heads origin $cleanBranch 2>$null
+        if ($remoteCheck) {
+            $branchExists = $true
+        }
+    }
+    
+    if ($branchExists -and $branches -notcontains $cleanBranch) {
         $branches += $cleanBranch
     }
 }
@@ -124,7 +144,22 @@ foreach ($branch in $branches) {
     
     # Checkout the branch
     Write-Host "  📂 Checking out branch..." -ForegroundColor Gray
-    git checkout $branch 2>$null
+    
+    # Check if it's a local branch first
+    $isLocalBranch = git branch | Select-String "^[* ] $branch$" | Measure-Object | Select-Object -ExpandProperty Count
+    
+    if ($isLocalBranch -gt 0) {
+        # Local branch exists, just checkout
+        git checkout $branch 2>$null
+    } else {
+        # Try to checkout remote branch and create local tracking branch
+        git checkout -b $branch origin/$branch 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            # Fallback: try direct checkout if the above fails
+            git checkout $branch 2>$null
+        }
+    }
+    
     if ($LASTEXITCODE -ne 0) {
         Write-Warning "  ⚠️  Failed to checkout branch '$branch'. Skipping..."
         $skippedBranches++
