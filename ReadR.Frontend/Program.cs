@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Azure;
 using ReadR.Frontend.Services;
 using ReadR.Shared.Services;
 
@@ -16,19 +15,8 @@ builder.Services.AddHttpClient<FeedParser>(client =>
     client.DefaultRequestHeaders.Add("User-Agent", "ReadR RSS Reader/1.0");
 });
 
-builder.Services.AddAzureClients(clientBuilder =>
-{
-    clientBuilder.AddBlobServiceClient(builder.Configuration["readrblobs:blobServiceUri"]!).WithName("readrblobs");
-    clientBuilder.AddQueueServiceClient(builder.Configuration["readrblobs:queueServiceUri"]!).WithName("readrblobs");
-    clientBuilder.AddTableServiceClient(builder.Configuration["readrblobs:tableServiceUri"]!).WithName("readrblobs");
-    clientBuilder.AddBlobServiceClient(builder.Configuration["readrqueues:blobServiceUri"]!).WithName("readrqueues");
-    clientBuilder.AddQueueServiceClient(builder.Configuration["readrqueues:queueServiceUri"]!).WithName("readrqueues");
-    clientBuilder.AddTableServiceClient(builder.Configuration["readrqueues:tableServiceUri"]!).WithName("readrqueues");
-});
-
 // Register feed source service
-// builder.Services.AddSingleton<IFeedSource, FileFeedSource>();
-builder.Services.AddSingleton<IFeedSource, AzureBlobFeedSource>();
+builder.Services.AddSingleton<IFeedSource, FileFeedSource>();
 
 // Register feed parser service
 builder.Services.AddScoped<IFeedParser, FeedParser>();
