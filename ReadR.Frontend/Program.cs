@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Azure;
 using ReadR.Frontend.Services;
 using ReadR.Shared.Services;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +42,16 @@ builder.Services.AddScoped<IHomePageService, HomePageService>();
 
 // Add background service for queue monitoring
 builder.Services.AddHostedService<QueueBackgroundService>();
+
+// Application Insights telemetry configuration
+builder.Services.AddApplicationInsightsTelemetry(new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions
+{
+    ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
+});
+builder.Services.AddApplicationInsightsTelemetry(new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions
+{
+    ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
+});
 
 var app = builder.Build();
 

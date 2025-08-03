@@ -2,12 +2,16 @@ using Azure.Provisioning.Storage;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
+// Add the Application Insights telemetry
+var readrinsights = builder.AddAzureApplicationInsights("readrinsights");
+
 // Add the Azure Container App environment
 builder.AddAzureContainerAppEnvironment("readracaenv");
 
 // azure storage
 var storage = builder.AddAzureStorage("readrstorage")
-                     .RunAsEmulator();
+                     //.RunAsEmulator()
+                     ;
 
 var readrblobs = storage.AddBlobs("readrblobs");
 var readrqueues = storage.AddQueues("readrqueues");
@@ -19,6 +23,9 @@ var functions = builder.AddAzureFunctionsProject<Projects.ReadR_Serverless>("fun
                        .WaitFor(readrqueues)
                        .WithReference(readrblobs)
                        .WithReference(readrqueues)
+                       .WithEnvironment("readrblobs__blobServiceUri", readrblobs)
+                       .WithEnvironment("readrqueues__queueServiceUri", readrqueues)
+                       .WithReference(readrinsights)
                        .WithRoleAssignments(storage,
                             StorageBuiltInRole.StorageBlobDataOwner,
                             StorageBuiltInRole.StorageQueueDataContributor,
@@ -35,7 +42,10 @@ var frontend = builder.AddProject<Projects.ReadR_Frontend>("frontend")
                       .WaitFor(readrblobs)
                       .WaitFor(functions)
                       .WithReference(readrqueues)
+                      .WithEnvironment("readrblobs__blobServiceUri", readrblobs)
+                      .WithEnvironment("readrqueues__queueServiceUri", readrqueues)
                       .WithReference(readrblobs)
+                      .WithReference(readrinsights)
                       .WithRoleAssignments(storage,
                            StorageBuiltInRole.StorageBlobDataOwner,
                            StorageBuiltInRole.StorageQueueDataContributor,
