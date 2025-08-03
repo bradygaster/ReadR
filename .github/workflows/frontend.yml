@@ -6,7 +6,7 @@ permissions:
   id-token: write
   contents: read
 env:
-  AZURE_WEBAPP_NAME: ${{ vars.frontend_APP_SVC_NAME }}
+  AZURE_WEBAPP_NAME: ${{ vars.FRONTEND_APP_SVC_NAME }}
   AZURE_WEBAPP_PACKAGE_PATH: ReadR.Frontend/published
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 9.0.x
@@ -45,9 +45,9 @@ jobs:
     - name: Azure Login
       uses: azure/login@v2
       with:
-        client-id: ${{ vars.frontend_CLIENT_ID }}
-        tenant-id: ${{ vars.frontend_TENANT_ID }}
-        subscription-id: ${{ vars.frontend_SUBSCRIPTION_ID }}
+        client-id: ${{ vars.FRONTEND_CLIENT_ID }}
+        tenant-id: ${{ vars.FRONTEND_TENANT_ID }}
+        subscription-id: ${{ vars.FRONTEND_SUBSCRIPTION_ID }}
     - name: Deploy to Azure WebApp
       uses: azure/webapps-deploy@v2
       with:
