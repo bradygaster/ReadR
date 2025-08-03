@@ -3,5 +3,4 @@
   <Project Path="ReadR.Frontend/ReadR.Frontend.csproj" />
   <Project Path="ReadR.Serverless/ReadR.Serverless.csproj" Id="b8d626b2-755f-44e1-92c9-13a4b7495f3d" />
   <Project Path="ReadR.ServiceDefaults/ReadR.ServiceDefaults.csproj" />
-  <Project Path="ReadR.Shared/ReadR.Shared.csproj" Id="e06d6584-41ce-4481-ba2f-79e5aff45980" />
 </Solution>

@@ -5,7 +5,6 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>a0f4d0a8-14e9-4ffd-95c7-967cdbe20ca4</UserSecretsId>
-    <ApplicationInsightsResourceId>/subscriptions/1136a23b-ebc0-4c06-992a-2c343fcdce4b/resourceGroups/rg-readrdev20250802003/providers/microsoft.insights/components/ReadRFrontend</ApplicationInsightsResourceId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,8 +15,6 @@
 	<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
 	<PackageReference Include="Microsoft.Extensions.Azure" Version="1.12.0" />
     <PackageReference Include="System.ServiceModel.Syndication" Version="8.0.0" />
-    <PackageReference Include="Aspire.Azure.Storage.Blobs" Version="9.4.0" />
-    <PackageReference Include="Aspire.Azure.Storage.Queues" Version="9.4.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,11 +25,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ReadR.ServiceDefaults\ReadR.ServiceDefaults.csproj" />
-    <ProjectReference Include="..\ReadR.Shared\ReadR.Shared.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Properties\ServiceDependencies\local\" />
   </ItemGroup>
 
 </Project>
