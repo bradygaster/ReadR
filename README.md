@@ -188,11 +188,6 @@ This repository demonstrates incremental Azure integration through seven distinc
 3. For Phase 4+ with Aspire: Set `ReadR.AppHost` as startup project
 4. Press F5 to run with full orchestration
 
-### Key Visual Studio Extensions
-- **Azure Functions Core Tools** (for serverless development)
-- **.NET Aspire Workload** (for orchestration features)
-- **Azure Development Workload** (for comprehensive Azure tooling)
-
 ## 📖 Session Takeaways
 
 After working through these phases, attendees will understand how to:
