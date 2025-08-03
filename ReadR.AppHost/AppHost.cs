@@ -1,9 +1,4 @@
-using Azure.Provisioning.Storage;
-
 var builder = DistributedApplication.CreateBuilder(args);
-
-// Add the Azure Container App environment
-builder.AddAzureContainerAppEnvironment("readracaenv");
 
 // azure storage
 var storage = builder.AddAzureStorage("readrstorage")
@@ -21,15 +16,7 @@ var functions = builder.AddAzureFunctionsProject<Projects.ReadR_Serverless>("fun
                        .WithReference(readrblobs)
                        .WithReference(readrqueues)
                        .WithEnvironment("readrblobs__blobServiceUri", readrblobs)
-                       .WithEnvironment("readrqueues__queueServiceUri", readrqueues)
-                       .WithRoleAssignments(storage,
-                            StorageBuiltInRole.StorageBlobDataOwner,
-                            StorageBuiltInRole.StorageQueueDataContributor,
-                            StorageBuiltInRole.StorageTableDataContributor
-                        )
-                       .PublishAsAzureContainerApp((aspireResource, containerApp) =>
-                       {
-                       });
+                       .WithEnvironment("readrqueues__queueServiceUri", readrqueues);
 
 // front end project
 var frontend = builder.AddProject<Projects.ReadR_Frontend>("frontend")
@@ -38,16 +25,8 @@ var frontend = builder.AddProject<Projects.ReadR_Frontend>("frontend")
                       .WaitFor(readrblobs)
                       .WaitFor(functions)
                       .WithReference(readrqueues)
-                      .WithEnvironment("readrblobs__blobServiceUri", readrblobs)
-                      .WithEnvironment("readrqueues__queueServiceUri", readrqueues)
                       .WithReference(readrblobs)
-                      .WithRoleAssignments(storage,
-                           StorageBuiltInRole.StorageBlobDataOwner,
-                           StorageBuiltInRole.StorageQueueDataContributor,
-                           StorageBuiltInRole.StorageTableDataContributor
-                      )
-                      .PublishAsAzureContainerApp((aspireResource, containerApp) =>
-                      {
-                      });
+                      .WithEnvironment("readrblobs__blobServiceUri", readrblobs)
+                      .WithEnvironment("readrqueues__queueServiceUri", readrqueues);
 
 builder.Build().Run();
