@@ -8,8 +8,6 @@ using System.Reflection;
 
 var builder = FunctionsApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults();
-
 builder.Configuration.AddUserSecrets(Assembly.GetAssembly(typeof(Program))!);
 
 builder.ConfigureFunctionsWebApplication();
