@@ -32,6 +32,8 @@ This repository demonstrates incremental Azure integration through seven distinc
 - New project templates for Blazor Server
 - Built-in debugging and hot reload
 - Package management with NuGet
+- Right-click deploy to Azure App Service
+- GitHub Actions workflows created during publish
 
 ### ☁️ Phase 2: Azure Storage Integration (`phase2-storage`)
 **Adding cloud storage using Visual Studio's Connected Services**
@@ -39,14 +41,13 @@ This repository demonstrates incremental Azure integration through seven distinc
 - ✅ **Connected Services**: Right-click project → Add → Connected Service → Azure Storage
 - ✅ Azure Blob Storage for feed configuration
 - ✅ Automatic Azure SDK integration
-- ✅ Configuration-based connection strings
-- ✅ Seamless local-to-cloud storage migration
+- ✅ Automatic role/permission setup during Connected Services experience
 
 **Visual Studio Features Used:**
 - Connected Services wizard for Azure Storage
 - Automatic NuGet package installation
 - Azure service configuration management
-- Local development with Azurite emulator
+- Connecting projects to live Azure resources
 
 **Key Changes:**
 - Added `Azure.Storage.Blobs`, `Azure.Storage.Queues`, `Azure.Data.Tables` packages
@@ -54,19 +55,21 @@ This repository demonstrates incremental Azure integration through seven distinc
 - Integrated Azure Client Factory for service management
 
 ### ⚡ Phase 3: Serverless Functions (`phase3-functions`)
-**Adding Azure Functions for background processing**
+**Adding Azure Functions for event-driven background processing**
 
 - ✅ **Azure Functions Project**: Add → New Project → Azure Functions
 - ✅ Blob trigger for feed update notifications
 - ✅ Queue output binding for message processing
 - ✅ Shared services between web app and functions
 - ✅ Event-driven architecture patterns
+- ✅ Right-click publishing and GitHub Actions workflow creation
 
 **Visual Studio Features Used:**
 - Azure Functions project template
 - Built-in function triggers and bindings
 - Local Functions runtime debugging
 - Seamless multi-project solution debugging
+- Right-click publish with GitHub Actions workflow generation
 
 **Key Changes:**
 - Added `ReadR.Serverless` Functions project
@@ -83,7 +86,7 @@ This repository demonstrates incremental Azure integration through seven distinc
 - ✅ Development dashboard
 
 **Visual Studio Features Used:**
-- .NET Aspire project templates
+- Aspire project templates
 - Multi-project debugging coordination
 - Aspire dashboard integration
 - Service dependency visualization
@@ -100,7 +103,7 @@ This repository demonstrates incremental Azure integration through seven distinc
 - ✅ Azure Storage emulator integration
 - ✅ Service reference management
 - ✅ Environment variable orchestration
-- ✅ Dependency injection coordination
+- ✅ Beginning to transition from Connected Services wire-up to using Aspire integrations
 
 **Visual Studio Features Used:**
 - Aspire's Azure hosting extensions
@@ -127,6 +130,9 @@ This repository demonstrates incremental Azure integration through seven distinc
 - Automatic Bicep template generation
 - Azure resource provisioning workflow
 - Container deployment pipeline
+
+**Azure Developer CLI (azd) Features Used:**
+- Using `azd infra gen` to generate the IAC code to disk for customization
 
 **Key Changes:**
 - Added `PublishAsAzureContainerApp()` configuration
@@ -180,7 +186,9 @@ This repository demonstrates incremental Azure integration through seven distinc
 - Visual Studio 2022 (v17.12 or later)
 - .NET 9.0 SDK
 - Azure subscription (for cloud deployment)
-- Docker Desktop (for local containerization)
+- Docker Desktop or Podman (for local containerization)
+- Azure Developer CLI (`azd`)
+- Azure CLI (`az`)
 
 ### Running Locally
 1. Clone the repository and switch to desired branch
