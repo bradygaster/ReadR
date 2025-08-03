@@ -37,9 +37,6 @@ builder.Services.AddScoped<IFeedParser, FeedParser>();
 builder.Services.AddScoped<IFeedCacheService, FeedCacheService>();
 builder.Services.AddScoped<IHomePageService, HomePageService>();
 
-// Add background service for queue monitoring
-builder.Services.AddHostedService<QueueBackgroundService>();
-
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
