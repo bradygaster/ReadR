@@ -188,18 +188,14 @@ This repository demonstrates incremental Azure integration through seven distinc
 3. For Phase 4+ with Aspire: Set `ReadR.AppHost` as startup project
 4. Press F5 to run with full orchestration
 
-### Key Visual Studio Extensions
-- **Azure Functions Core Tools** (for serverless development)
-- **.NET Aspire Workload** (for orchestration features)
-- **Azure Development Workload** (for comprehensive Azure tooling)
-
 ## 📖 Session Takeaways
 
 After working through these phases, attendees will understand how to:
 
 - **Leverage Connected Services** to rapidly integrate Azure services
 - **Use .NET Aspire** for local development and cloud deployment orchestration
-- **Right-click deploy** applications to Azure Container Apps
+- **Right-click deploy** applications to Azure App Service, Functions, and Container Apps
+- **CI/CD Pipeline generation** so you can automate your deployments in the future
 - **Monitor applications** with Application Insights integration
 - **Implement Infrastructure as Code** through Visual Studio workflows
 - **Debug multi-service applications** locally with unified tooling
