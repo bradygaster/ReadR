@@ -29,7 +29,8 @@ var functions = builder.AddAzureFunctionsProject<Projects.ReadR_Serverless>("fun
                         )
                        .PublishAsAzureContainerApp((aspireResource, containerApp) =>
                        {
-                       });
+                       })
+                       ;
 
 // front end project
 var frontend = builder.AddProject<Projects.ReadR_Frontend>("frontend")
@@ -48,6 +49,7 @@ var frontend = builder.AddProject<Projects.ReadR_Frontend>("frontend")
                       )
                       .PublishAsAzureContainerApp((aspireResource, containerApp) =>
                       {
-                      });
+                      })
+                      ;
 
 builder.Build().Run();
