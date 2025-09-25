@@ -7,7 +7,6 @@ ReadR is a modern RSS feed reader application built with ASP.NET Core Blazor Ser
 ReadR is built as a cloud-native application with the following components:
 
 - **Frontend**: ASP.NET Core Blazor Server app with responsive UI
-- **Serverless Functions**: Azure Functions for event-driven feed processing
 - **Storage**: Azure Storage Blobs and Queues for feed data and processing
 - **Orchestration**: .NET Aspire for local development and Azure deployment
 - **Monitoring**: Application Insights and Azure Monitor for telemetry and observability
@@ -20,13 +19,11 @@ ReadR is built as a cloud-native application with the following components:
 - **Category Navigation**: Organize feeds by source type (Microsoft blogs, MVP blogs, YouTube channels, etc.)
 - **Real-time Updates**: Background processing keeps feed content fresh
 - **Cloud Storage**: Feed configurations and data stored in Azure Storage
-- **Event-driven Processing**: Azure Functions handle feed updates asynchronously
 - **Monitoring**: Built-in Application Insights integration for performance tracking
 
 ## 🛠️ Technology Stack
 
 - **Frontend**: ASP.NET Core 9.0, Blazor Server, Bootstrap CSS
-- **Backend**: Azure Functions (.NET 9.0)
 - **Storage**: Azure Blob Storage, Azure Storage Queues
 - **Orchestration**: .NET Aspire
 - **Monitoring**: Azure Application Insights
@@ -76,7 +73,6 @@ ReadR is built as a cloud-native application with the following components:
 ## 📁 Project Structure
 
 - **ReadR.Frontend**: Main Blazor Server web application
-- **ReadR.Serverless**: Azure Functions for background processing
 - **ReadR.AppHost**: .NET Aspire orchestration and deployment configuration
 - **ReadR.ServiceDefaults**: Shared service configurations and extensions
 
