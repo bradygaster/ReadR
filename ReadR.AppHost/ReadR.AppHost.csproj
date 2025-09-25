@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ReadR.Frontend\ReadR.Frontend.csproj" />
-    <ProjectReference Include="..\ReadR.Serverless\ReadR.Serverless.csproj" />
   </ItemGroup>
 
 </Project>

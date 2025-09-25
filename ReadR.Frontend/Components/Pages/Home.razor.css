@@ -16,7 +16,6 @@
 }
 
 .main-content {
-    margin-left: 300px;
     flex: 1;
     padding: 2rem;
     background-color: var(--bg-primary);

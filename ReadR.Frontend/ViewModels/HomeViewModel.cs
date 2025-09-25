@@ -5,9 +5,7 @@ namespace ReadR.Frontend.ViewModels;
 public class HomeViewModel
 {
     public List<FeedEntry> Entries { get; set; } = new();
-    public CategorizedFeeds Categories { get; set; } = new();
     public Dictionary<string, FeedMetadata> FeedMetadata { get; set; } = new();
-    public string? CurrentCategory { get; set; }
     public string? CurrentFeedUrl { get; set; }
     public int CurrentPage { get; set; }
     public int TotalPages { get; set; }
@@ -53,11 +51,6 @@ public class HomeViewModel
             }
         }
 
-        if (!string.IsNullOrEmpty(CurrentCategory))
-        {
-            return $"{Uri.UnescapeDataString(CurrentCategory)} Posts";
-        }
-
         return "Latest Posts";
     }
 
@@ -84,11 +77,6 @@ public class HomeViewModel
             }
 
             return "Posts from this specific feed";
-        }
-
-        if (!string.IsNullOrEmpty(CurrentCategory))
-        {
-            return $"All posts from {Uri.UnescapeDataString(CurrentCategory)} category";
         }
 
         return "Stay up to date with the .NET community";

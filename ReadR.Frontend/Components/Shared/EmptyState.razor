@@ -3,9 +3,9 @@
         <div class="empty-icon">@Icon</div>
         <h3 class="empty-title">@Title</h3>
         <p class="empty-subtitle">@Message</p>
-        @if (OnAction.HasDelegate)
+        @if (OnRefresh.HasDelegate)
         {
-            <button class="btn btn-primary" @onclick="OnAction">
+            <button class="btn btn-primary" @onclick="OnRefresh">
                 <span>@ActionIcon</span>
                 @ActionText
             </button>
@@ -19,5 +19,5 @@
     [Parameter] public string Message { get; set; } = "Check back later for updates.";
     [Parameter] public string ActionIcon { get; set; } = "🔄";
     [Parameter] public string ActionText { get; set; } = "Refresh";
-    [Parameter] public EventCallback OnAction { get; set; }
+    [Parameter] public EventCallback OnRefresh { get; set; }
 }

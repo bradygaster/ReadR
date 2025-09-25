@@ -1,0 +1,47 @@
+<div class="navigation-header">
+    <button class="btn btn-secondary nav-btn" @onclick="PreviousPage" disabled="@(HomeViewModel.CurrentPage == 0)">
+        <span>⬅️</span>
+        Previous
+    </button>
+
+    <div class="entry-counter">
+        <span class="current-entry">@(HomeViewModel.CurrentPage + 1)</span>
+        <span class="separator">of</span>
+        <span class="total-entries">@HomeViewModel.TotalPages</span>
+        <span class="page-label">Pages</span>
+    </div>
+
+    <button class="btn btn-secondary nav-btn" @onclick="NextPage" disabled="@(HomeViewModel.CurrentPage >= HomeViewModel.TotalPages - 1)">
+        Next
+        <span>➡️</span>
+    </button>
+</div>
+
+@code
+{
+    [Parameter]
+    public EventCallback<int> PageChanged { get; set; }
+
+    [Parameter]
+    public ViewModels.HomeViewModel HomeViewModel { get; set; } = new();
+
+    private Task NextPage()
+    {
+        if (HomeViewModel.CurrentPage < HomeViewModel.TotalPages - 1)
+        {
+            var target = HomeViewModel.CurrentPage + 1;
+            return PageChanged.InvokeAsync(target);
+        }
+        return Task.CompletedTask;
+    }
+
+    private Task PreviousPage()
+    {
+        if (HomeViewModel.CurrentPage > 0)
+        {
+            var target = HomeViewModel.CurrentPage - 1;
+            return PageChanged.InvokeAsync(target);
+        }
+        return Task.CompletedTask;
+    }
+}

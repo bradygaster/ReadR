@@ -53,44 +53,11 @@ public class FeedCacheService : IFeedCacheService
     }
 
     public async Task<List<FeedEntry>> GetFilteredEntriesAsync(
-        string? categoryName = null,
         string? feedUrl = null
     )
     {
         var cachedData = await GetCachedFeedsAsync();
         var entries = cachedData.AllEntries;
-
-        if (!string.IsNullOrEmpty(feedUrl))
-        {
-            string decodedFeedUrl;
-            try
-            {
-                // Try base64 decoding first (new approach)
-                var bytes = Convert.FromBase64String(feedUrl);
-                decodedFeedUrl = System.Text.Encoding.UTF8.GetString(bytes);
-            }
-            catch
-            {
-                // Fallback to URL decoding (old approach)
-                decodedFeedUrl = Uri.UnescapeDataString(feedUrl);
-            }
-            
-            entries = entries.Where(e => e.FeedUrl == decodedFeedUrl).ToList();
-        }
-        else if (!string.IsNullOrEmpty(categoryName))
-        {
-            var decodedCategoryName = Uri.UnescapeDataString(categoryName);
-            entries = entries
-                .Where(e =>
-                    string.Equals(
-                        e.SourceCategory,
-                        decodedCategoryName,
-                        StringComparison.OrdinalIgnoreCase
-                    )
-                )
-                .ToList();
-        }
-
         return entries.OrderByDescending(e => e.PublishDate).ToList();
     }
 
