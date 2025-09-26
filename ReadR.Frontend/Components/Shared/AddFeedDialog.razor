@@ -31,21 +31,6 @@
                         </div>
                     }
                 </div>
-                
-                <div class="example-feeds">
-                    <p class="examples-title">Popular .NET Feeds:</p>
-                    <div class="example-buttons">
-                        <button type="button" class="btn-example" @onclick="@(() => SetExampleFeed("https://devblogs.microsoft.com/dotnet/feed/"))" disabled="@IsLoading">
-                            .NET Blog
-                        </button>
-                        <button type="button" class="btn-example" @onclick="@(() => SetExampleFeed("https://www.hanselman.com/blog/SyndicationService.asmx/GetRss"))" disabled="@IsLoading">
-                            Scott Hanselman
-                        </button>
-                        <button type="button" class="btn-example" @onclick="@(() => SetExampleFeed("https://feeds.feedburner.com/oreilly/dotnet"))" disabled="@IsLoading">
-                            O'Reilly .NET
-                        </button>
-                    </div>
-                </div>
             </div>
             
             <div class="modal-footer">
@@ -122,13 +107,6 @@
             IsLoading = false;
             StateHasChanged();
         }
-    }
-    
-    private void SetExampleFeed(string url)
-    {
-        FeedUrl = url;
-        ErrorMessage = "";
-        StateHasChanged();
     }
     
     private async Task CloseDialog()

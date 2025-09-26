@@ -166,58 +166,6 @@
     font-size: 0.875rem;
 }
 
-/* Example Feeds */
-.example-feeds {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--border-color);
-}
-
-.examples-title {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    margin-bottom: 0.75rem;
-}
-
-.example-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.btn-example {
-    padding: 0.5rem 0.75rem;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    color: var(--text-secondary);
-    font-size: 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    text-decoration: none;
-}
-
-.btn-example:hover {
-    background: var(--bg-tertiary);
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
-    transform: translateY(-1px);
-}
-
-.btn-example:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.btn-example:disabled:hover {
-    transform: none;
-    background: var(--bg-secondary);
-    border-color: var(--border-color);
-    color: var(--text-secondary);
-}
-
 /* Modal Footer */
 .modal-footer {
     display: flex;
@@ -313,14 +261,6 @@
     
     .modal-title {
         font-size: 1.25rem;
-    }
-    
-    .example-buttons {
-        flex-direction: column;
-    }
-    
-    .btn-example {
-        text-align: center;
     }
     
     .modal-footer {
