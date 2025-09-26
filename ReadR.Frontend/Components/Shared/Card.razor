@@ -58,7 +58,7 @@
     public FeedEntry? FeedEntry { get; set; } = null;
 
     // Utility methods kept for display
-    private static string TruncateDescription(string description, int maxLength, bool ignoreFirstFullStop = false)
+    private static string TruncateDescription(string description, int maxLength)
     {
         if (string.IsNullOrEmpty(description))
             return description;
@@ -68,17 +68,6 @@
 
         if (plainText.Length <= maxLength)
             return plainText;
-
-        // If we are allowed to look for the first full stop before the max length, do so
-        if (!ignoreFirstFullStop)
-        {
-            var periodIndex = plainText.IndexOf('.', 0, maxLength);
-            if (periodIndex >= 0)
-            {
-                // Include the period in the returned text; no ellipsis needed because it's a sentence boundary
-                return plainText.Substring(0, periodIndex + 1);
-            }
-        }
 
         // Fallback to original truncation logic respecting word boundary and ellipsis
         var truncated = plainText.Substring(0, maxLength);

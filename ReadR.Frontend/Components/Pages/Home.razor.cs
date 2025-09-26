@@ -12,7 +12,10 @@ public partial class Home : IDisposable
 
     private HomeViewModel viewModel = new();
     private DotNetObjectReference<Home>? objRef;
-    private const int entriesPerPage = 9;
+    private const int entriesPerPage = 6;
+    
+    // Dialog state
+    private bool isAddFeedDialogVisible = false;
 
     private List<FeedEntry> CurrentPageEntries => viewModel.GetCurrentPageEntries(entriesPerPage);
 
@@ -33,14 +36,25 @@ public partial class Home : IDisposable
     [JSInvokable]
     public async Task HandleKeyPress(string key)
     {
-        switch (key)
+        // Close dialog with Escape key
+        if (key == "Escape" && isAddFeedDialogVisible)
         {
-            case "ArrowLeft":
-                await ChangePage(viewModel.CurrentPage - 1);
-                break;
-            case "ArrowRight":
-                await ChangePage(viewModel.CurrentPage + 1);
-                break;
+            await HideAddFeedDialog();
+            return;
+        }
+        
+        // Navigation keys (only when dialog is not visible)
+        if (!isAddFeedDialogVisible)
+        {
+            switch (key)
+            {
+                case "ArrowLeft":
+                    await ChangePage(viewModel.CurrentPage - 1);
+                    break;
+                case "ArrowRight":
+                    await ChangePage(viewModel.CurrentPage + 1);
+                    break;
+            }
         }
     }
 
@@ -76,6 +90,34 @@ public partial class Home : IDisposable
     {
         await HomePageService.RefreshDataAsync();
         await LoadViewModel();
+    }
+
+    // Dialog management methods
+    private async Task ShowAddFeedDialog()
+    {
+        isAddFeedDialogVisible = true;
+        StateHasChanged();
+        await Task.CompletedTask;
+    }
+
+    private async Task HideAddFeedDialog()
+    {
+        isAddFeedDialogVisible = false;
+        StateHasChanged();
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleAddFeedSubmit(string feedUrl)
+    {
+        // TODO: Implement actual feed addition logic
+        // For now, just show a message and close the dialog
+        await JSRuntime.InvokeVoidAsync("console.log", $"Feed URL submitted: {feedUrl}");
+        
+        // Placeholder - in the future this would call a service to add the feed
+        // await FeedService.AddFeedAsync(feedUrl);
+        // await LoadViewModel(); // Refresh the data
+        
+        await HideAddFeedDialog();
     }
 
     private string GetFeedDisplayName(string feedUrl)

@@ -1,0 +1,58 @@
+@using ReadR.Frontend.ViewModels
+@using ReadR.Frontend.Services
+
+<nav class="navbar">
+    <div class="nav-container">
+        <!-- App Name/Logo - Far Left -->
+        <div class="nav-brand" @onclick="@(() => Navigation.NavigateTo("/"))">
+            <h1 class="brand-title">ReadR</h1>
+        </div>
+
+        <!-- Stats Bubbles - Center -->
+        <div class="nav-stats">
+            <PreviousButton HomeViewModel="HomeViewModel" PageChanged="(indx) => PageChanged.InvokeAsync(indx)" />
+
+            <div class="stat-bubble" title="Number of active feeds">
+                <div class="stat-icon">📡</div>
+                <div class="stat-text">
+                    <span class="stat-number">@FeedCount</span>
+                    <span class="stat-label">FEEDS</span>
+                </div>
+            </div>
+
+            <EntryCounter HomeViewModel="HomeViewModel" />
+            
+            <div class="stat-bubble" title="Total entries available">
+                <div class="stat-icon">📰</div>
+                <div class="stat-text">
+                    <span class="stat-number">@EntryCount</span>
+                    <span class="stat-label">ENTRIES</span>
+                </div>
+            </div>
+
+            <NextButton HomeViewModel="HomeViewModel" PageChanged="(indx) => PageChanged.InvokeAsync(indx)" />
+        </div>
+        
+        <!-- Add Feed Button - Far Right -->
+        <div class="nav-actions">
+            <button class="btn btn-add-feed" type="button" @onclick="OnAddFeedClick" title="Add new RSS/Atom feed">
+                <span class="btn-icon">➕</span>
+                <span class="btn-text">Add Feed</span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+@code {
+    [Parameter] public int FeedCount { get; set; }
+    [Parameter] public int EntryCount { get; set; }
+    [Parameter] public EventCallback OnAddFeedClick { get; set; }
+    
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+    [Parameter]
+    public ViewModels.HomeViewModel HomeViewModel { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<int> PageChanged { get; set; }
+}

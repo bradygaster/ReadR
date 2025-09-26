@@ -12,6 +12,10 @@ public class HomeViewModel
     public bool IsLoading { get; set; }
     public string? ErrorMessage { get; set; }
 
+    // New properties for navigation bar
+    public int TotalFeedCount => FeedMetadata.Values.Count(m => m.IsWorking);
+    public int TotalEntryCount => Entries.Count;
+
     public List<FeedEntry> GetCurrentPageEntries(int entriesPerPage)
     {
         return Entries.Skip(CurrentPage * entriesPerPage).Take(entriesPerPage).ToList();

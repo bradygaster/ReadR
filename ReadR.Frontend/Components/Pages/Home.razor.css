@@ -1,6 +1,7 @@
 /* Layout */
 .app-container {
     display: flex;
+    flex-direction: column;
     min-height: 100vh;
 }
 
@@ -17,9 +18,9 @@
 
 .main-content {
     flex: 1;
-    padding: 2rem;
+    padding: .05rem 2rem 2rem 2rem; /* Reduced top padding from 2rem to 1rem */
     background-color: var(--bg-primary);
-    min-height: 100vh;
+    min-height: calc(100vh - 120px); /* Account for navbar height */
 }
 
 /* Sidebar Header */
@@ -154,7 +155,8 @@
     
     .main-content {
         margin-left: 0;
-        padding: 1rem;
+        padding: 0.2rem 1rem 1rem 1rem; /* Reduced top padding from 1rem to 0.5rem for mobile */
+        min-height: calc(100vh - 160px); /* Account for mobile navbar height */
     }
     
     .app-container {

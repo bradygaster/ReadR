@@ -1,0 +1,141 @@
+@if (IsVisible)
+{
+    <div class="modal-overlay" @onclick="HandleOverlayClick">
+        <div class="modal-dialog" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Feed</h3>
+                <button type="button" class="modal-close" @onclick="OnClose" aria-label="Close dialog">
+                    <span class="close-icon">×</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="feed-url" class="form-label">RSS/Atom Feed URL</label>
+                    <input type="url" 
+                           id="feed-url" 
+                           class="form-control" 
+                           placeholder="https://example.com/feed.xml" 
+                           @bind="FeedUrl" 
+                           @onkeypress="HandleKeyPress"
+                           disabled="@IsLoading" />
+                    <div class="form-hint">
+                        Enter the URL of an RSS or Atom feed you'd like to subscribe to
+                    </div>
+                    
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="error-message">
+                            <span class="error-icon">⚠️</span>
+                            @ErrorMessage
+                        </div>
+                    }
+                </div>
+                
+                <div class="example-feeds">
+                    <p class="examples-title">Popular .NET Feeds:</p>
+                    <div class="example-buttons">
+                        <button type="button" class="btn-example" @onclick="@(() => SetExampleFeed("https://devblogs.microsoft.com/dotnet/feed/"))" disabled="@IsLoading">
+                            .NET Blog
+                        </button>
+                        <button type="button" class="btn-example" @onclick="@(() => SetExampleFeed("https://www.hanselman.com/blog/SyndicationService.asmx/GetRss"))" disabled="@IsLoading">
+                            Scott Hanselman
+                        </button>
+                        <button type="button" class="btn-example" @onclick="@(() => SetExampleFeed("https://feeds.feedburner.com/oreilly/dotnet"))" disabled="@IsLoading">
+                            O'Reilly .NET
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="OnClose" disabled="@IsLoading">
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-primary" @onclick="HandleAddFeed" disabled="@(IsLoading || string.IsNullOrWhiteSpace(FeedUrl))">
+                    @if (IsLoading)
+                    {
+                        <span class="spinner"></span>
+                        <span>Adding...</span>
+                    }
+                    else
+                    {
+                        <span class="btn-icon">➕</span>
+                        <span>Add Feed</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<string> OnAddFeed { get; set; }
+    
+    private string FeedUrl { get; set; } = "";
+    private string ErrorMessage { get; set; } = "";
+    private bool IsLoading { get; set; }
+    
+    private async Task HandleOverlayClick()
+    {
+        await CloseDialog();
+    }
+    
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(FeedUrl) && !IsLoading)
+        {
+            await HandleAddFeed();
+        }
+        else if (e.Key == "Escape")
+        {
+            await CloseDialog();
+        }
+    }
+    
+    private async Task HandleAddFeed()
+    {
+        if (string.IsNullOrWhiteSpace(FeedUrl))
+            return;
+            
+        ErrorMessage = "";
+        IsLoading = true;
+        StateHasChanged();
+        
+        try
+        {
+            // Simulate processing time for now
+            await Task.Delay(1000);
+            
+            // TODO: Implement actual feed validation and addition logic
+            await OnAddFeed.InvokeAsync(FeedUrl.Trim());
+            await CloseDialog();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to add feed: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+    
+    private void SetExampleFeed(string url)
+    {
+        FeedUrl = url;
+        ErrorMessage = "";
+        StateHasChanged();
+    }
+    
+    private async Task CloseDialog()
+    {
+        FeedUrl = "";
+        ErrorMessage = "";
+        IsLoading = false;
+        await OnClose.InvokeAsync();
+    }
+}

@@ -9,14 +9,15 @@
 <PageTitle>@viewModel.GetPageTitle() - ReadR</PageTitle>
 
 <div class="app-container">
+    <!-- Navigation Bar -->
+    <NavBar FeedCount="viewModel.TotalFeedCount" 
+            EntryCount="viewModel.TotalEntryCount"
+            HomeViewModel="viewModel"
+            OnAddFeedClick="ShowAddFeedDialog"
+            PageChanged="OnPageChangedAsync" />
+    
     <!-- Main Content -->
     <div class="main-content">
-        <PageHeader Title="@viewModel.GetPageTitle()"
-                    Subtitle="@viewModel.GetPageSubtitle()"
-                    ShowStats="viewModel.Entries?.Any() == true"
-                    CurrentPage="viewModel.CurrentPage"
-                    TotalPages="viewModel.TotalPages"
-                    EntryCount="viewModel.Entries?.Count ?? 0" />
 
         @if (viewModel.IsLoading)
         {
@@ -29,7 +30,6 @@
         else if (viewModel.Entries?.Any() == true && CurrentPageEntries.Any())
         {
             <div class="navigation-container">
-                <FeedNavigationBar HomeViewModel="viewModel" PageChanged="OnPageChangedAsync" />
 
                 <div class="feeds-grid">
                     @foreach (var entry in CurrentPageEntries)
@@ -48,9 +48,14 @@
                         Message="You haven't subscribed to any feeds yet or there are no posts to display."
                         ActionIcon="➕"
                         ActionText="Add Feeds"
-                        OnRefresh='EventCallback.Factory.Create(this, () => Navigation.NavigateTo("/settings",true))'/>
+                        OnRefresh='EventCallback.Factory.Create(this, ShowAddFeedDialog)'/>
         }
     </div>
 </div>
+
+<!-- Add Feed Dialog -->
+<AddFeedDialog IsVisible="isAddFeedDialogVisible" 
+               OnClose="HideAddFeedDialog" 
+               OnAddFeed="HandleAddFeedSubmit" />
 
 <script src="js/home.js"></script>
