@@ -65,14 +65,17 @@ function updateCardSelection() {
     // Remove previous selection
     cards.forEach(card => card.classList.remove('selected'));
     
-    // Add selection to current card only if keyboard has been used
-    if (hasUsedKeyboard && cards[selectedCardIndex]) {
+    // Always show the first card as selected to indicate keyboard navigation is available
+    if (cards[selectedCardIndex]) {
         cards[selectedCardIndex].classList.add('selected');
-        // Scroll into view if needed
-        cards[selectedCardIndex].scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'nearest' 
-        });
+        
+        // Only scroll into view if keyboard has been used
+        if (hasUsedKeyboard) {
+            cards[selectedCardIndex].scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'nearest' 
+            });
+        }
     }
 }
 
@@ -180,10 +183,9 @@ function handleKeyDown(event) {
             break;
     }
     
-    // Track if keyboard navigation has been used
+    // Track if keyboard navigation has been used for enhanced features
     if (isNavigationKey && !hasUsedKeyboard) {
         hasUsedKeyboard = true;
-        updateCardSelection(); // This will now show the selection
         
         // Add a subtle animation to indicate keyboard mode is active
         const entryCounter = document.querySelector('.entry-counter');
