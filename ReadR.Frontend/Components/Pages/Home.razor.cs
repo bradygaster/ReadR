@@ -16,6 +16,11 @@ public partial class Home : IDisposable
     
     // Dialog state
     private bool isAddFeedDialogVisible = false;
+    private bool isKeyboardHelpVisible = false;
+    
+    // Keyboard navigation state
+    private int selectedCardIndex = 0;
+    private int totalCards = 0;
 
     private List<FeedEntry> CurrentPageEntries => viewModel.GetCurrentPageEntries(entriesPerPage);
 
@@ -31,31 +36,61 @@ public partial class Home : IDisposable
             await JSRuntime.InvokeVoidAsync("setupKeyboardNavigation", objRef);
             await LoadViewModel();
         }
+        else
+        {
+            // Refresh card selection after re-render
+            await JSRuntime.InvokeVoidAsync("refreshCardSelection");
+        }
     }
 
     [JSInvokable]
     public async Task HandleKeyPress(string key)
     {
         // Close dialog with Escape key
-        if (key == "Escape" && isAddFeedDialogVisible)
+        if (key == "Escape")
         {
-            await HideAddFeedDialog();
+            if (isAddFeedDialogVisible)
+            {
+                await HideAddFeedDialog();
+                return;
+            }
+            if (isKeyboardHelpVisible)
+            {
+                await HideKeyboardHelp();
+                return;
+            }
+        }
+        
+        // Show keyboard help
+        if (key == "ShowHelp")
+        {
+            await ShowKeyboardHelp();
             return;
         }
         
-        // Navigation keys (only when dialog is not visible)
-        if (!isAddFeedDialogVisible)
+        // Navigation keys (only when no dialogs are visible)
+        if (!isAddFeedDialogVisible && !isKeyboardHelpVisible)
         {
             switch (key)
             {
                 case "ArrowLeft":
+                case "NavigatePrevious":
                     await ChangePage(viewModel.CurrentPage - 1);
                     break;
                 case "ArrowRight":
+                case "NavigateNext":
                     await ChangePage(viewModel.CurrentPage + 1);
                     break;
             }
         }
+    }
+    
+    [JSInvokable]
+    public void UpdateSelection(int cardIndex, int totalCount)
+    {
+        selectedCardIndex = cardIndex;
+        totalCards = totalCount;
+        // Note: We don't call StateHasChanged here as this is just for tracking
     }
 
     public void Dispose()
@@ -71,6 +106,10 @@ public partial class Home : IDisposable
 
         viewModel = await HomePageService.GetHomeViewModelAsync(0);
         StateHasChanged();
+        
+        // Reset selection to first card when data loads
+        selectedCardIndex = 0;
+        await JSRuntime.InvokeVoidAsync("refreshCardSelection");
     }
 
     private Task OnPageChangedAsync(int newPage) => ChangePage(newPage);
@@ -84,6 +123,10 @@ public partial class Home : IDisposable
 
         viewModel = await HomePageService.GetHomeViewModelAsync(newPage);
         StateHasChanged();
+        
+        // Reset selection to first card when page changes
+        selectedCardIndex = 0;
+        await JSRuntime.InvokeVoidAsync("refreshCardSelection");
     }
 
     private async Task RetryLoad()
@@ -103,6 +146,20 @@ public partial class Home : IDisposable
     private async Task HideAddFeedDialog()
     {
         isAddFeedDialogVisible = false;
+        StateHasChanged();
+        await Task.CompletedTask;
+    }
+    
+    private async Task ShowKeyboardHelp()
+    {
+        isKeyboardHelpVisible = true;
+        StateHasChanged();
+        await Task.CompletedTask;
+    }
+
+    private async Task HideKeyboardHelp()
+    {
+        isKeyboardHelpVisible = false;
         StateHasChanged();
         await Task.CompletedTask;
     }

@@ -38,7 +38,9 @@
                     }
                 </div>
 
-                <FeedNavigationBar HomeViewModel="viewModel" PageChanged="OnPageChangedAsync" />
+                <FeedNavigationBar HomeViewModel="viewModel" 
+                                   PageChanged="OnPageChangedAsync" 
+                                   ShowKeyboardHelpRequested="ShowKeyboardHelp" />
             </div>
         }
         else
@@ -57,5 +59,9 @@
 <AddFeedDialog IsVisible="isAddFeedDialogVisible" 
                OnClose="HideAddFeedDialog" 
                OnAddFeed="HandleAddFeedSubmit" />
+
+<!-- Keyboard Help Dialog -->
+<KeyboardHelp IsVisible="isKeyboardHelpVisible" 
+              OnClose="HideKeyboardHelp" />
 
 <script src="js/home.js"></script>
