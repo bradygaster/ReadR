@@ -1,4 +1,3 @@
-using System.IO;
 using System.ServiceModel.Syndication;
 using System.Xml;
 using ReadR.Frontend.Models;
