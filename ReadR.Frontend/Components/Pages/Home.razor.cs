@@ -3,6 +3,7 @@ using Microsoft.JSInterop;
 using ReadR.Frontend.Models;
 using ReadR.Frontend.Services;
 using ReadR.Frontend.ViewModels;
+using Microsoft.Extensions.Logging;
 
 namespace ReadR.Frontend.Components.Pages;
 
@@ -26,7 +27,9 @@ public partial class Home : IDisposable
 
     [Inject] private NavigationManager Navigation { get; set; } = default!;
     [Inject] private IHomePageService HomePageService { get; set; } = default!;
+    [Inject] private IFeedManagementService FeedManagementService { get; set; } = default!;
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+    [Inject] private ILogger<Home> Logger { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -166,15 +169,50 @@ public partial class Home : IDisposable
 
     private async Task HandleAddFeedSubmit(string feedUrl)
     {
-        // TODO: Implement actual feed addition logic
-        // For now, just show a message and close the dialog
-        await JSRuntime.InvokeVoidAsync("console.log", $"Feed URL submitted: {feedUrl}");
+        await JSRuntime.InvokeVoidAsync("console.log", "Home: HandleAddFeedSubmit called with URL: " + feedUrl);
         
-        // Placeholder - in the future this would call a service to add the feed
-        // await FeedService.AddFeedAsync(feedUrl);
-        // await LoadViewModel(); // Refresh the data
-        
-        await HideAddFeedDialog();
+        try
+        {
+            Logger.LogInformation("Adding feed: {FeedUrl}", feedUrl);
+            
+            // Add the feed using the feed management service
+            var result = await FeedManagementService.AddFeedAsync(feedUrl.Trim());
+            
+            await JSRuntime.InvokeVoidAsync("console.log", $"Home: AddFeedAsync result - Success: {result.Success}, AlreadyExists: {result.AlreadyExists}");
+            
+            if (result.Success)
+            {
+                // Feed added successfully - refresh the view
+                await LoadViewModel();
+                await JSRuntime.InvokeVoidAsync("showToast", "success", "Feed added successfully!", $"Added {feedUrl}");
+                Logger.LogInformation("Successfully added feed: {FeedUrl}", feedUrl);
+                
+                // Only hide dialog on success
+                await HideAddFeedDialog();
+                await JSRuntime.InvokeVoidAsync("console.log", "Home: Dialog closed after successful add");
+            }
+            else if (result.AlreadyExists)
+            {
+                // Feed already exists - show warning but don't close dialog
+                await JSRuntime.InvokeVoidAsync("showToast", "warning", "Feed already exists", "This feed is already in your collection.");
+                Logger.LogWarning("Attempted to add existing feed: {FeedUrl}", feedUrl);
+                await JSRuntime.InvokeVoidAsync("console.log", "Home: Feed already exists, keeping dialog open");
+            }
+            else
+            {
+                // Error adding feed - show error but don't close dialog
+                await JSRuntime.InvokeVoidAsync("showToast", "error", "Failed to add feed", result.ErrorMessage ?? "An unknown error occurred.");
+                Logger.LogError("Failed to add feed: {FeedUrl} - {Error}", feedUrl, result.ErrorMessage);
+                await JSRuntime.InvokeVoidAsync("console.log", "Home: Error adding feed, keeping dialog open: " + (result.ErrorMessage ?? "Unknown error"));
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Exception adding feed: {FeedUrl}", feedUrl);
+            await JSRuntime.InvokeVoidAsync("showToast", "error", "Error adding feed", "An unexpected error occurred. Please try again.");
+            await JSRuntime.InvokeVoidAsync("console.log", "Home: Exception in HandleAddFeedSubmit: " + ex.Message);
+            // Don't close dialog on exception so user can try again
+        }
     }
 
     private string GetFeedDisplayName(string feedUrl)
