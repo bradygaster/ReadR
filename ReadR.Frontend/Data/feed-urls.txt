@@ -1,4 +1,1 @@
-# Microsoft Official Blogs
-https://devblogs.microsoft.com/dotnet/feed/
-
-# User Added
+# Feed list
