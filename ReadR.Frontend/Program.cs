@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Azure;
 using ReadR.Frontend.Services;
 using ReadR.Shared.Services;
-using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +38,9 @@ builder.Services.AddScoped<IFeedParser, FeedParser>();
 // Add new cache and page services
 builder.Services.AddScoped<IFeedCacheService, FeedCacheService>();
 builder.Services.AddScoped<IHomePageService, HomePageService>();
+
+// Add feed management service
+builder.Services.AddScoped<IFeedManagementService, FeedManagementService>();
 
 // Add background service for queue monitoring
 builder.Services.AddHostedService<QueueBackgroundService>();

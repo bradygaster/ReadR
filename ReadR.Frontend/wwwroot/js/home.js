@@ -17,6 +17,9 @@ window.setupKeyboardNavigation = function(dotNetObjectReference) {
     // Initialize grid layout
     updateGridLayout();
     updateCardSelection();
+    
+    // Ensure toast container exists
+    ensureToastContainer();
 };
 
 window.cleanupKeyboardNavigation = function() {
@@ -27,6 +30,76 @@ window.cleanupKeyboardNavigation = function() {
         homeComponentRef = null;
         hasUsedKeyboard = false;
     }
+};
+
+// Check if click was on overlay (outside of modal dialog)
+window.isOverlayClick = function(clientX, clientY) {
+    const modalDialog = document.querySelector('.modal-dialog');
+    if (!modalDialog) {
+        return true; // If no modal dialog found, treat as overlay click
+    }
+    
+    const rect = modalDialog.getBoundingClientRect();
+    return clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom;
+};
+
+// Toast notification functionality
+function ensureToastContainer() {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    return container;
+}
+
+window.showToast = function(type, title, message) {
+    const container = ensureToastContainer();
+    
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    const icon = getToastIcon(type);
+    
+    toast.innerHTML = `
+        <div class="toast-content">
+            <div class="toast-icon">${icon}</div>
+            <div class="toast-text">
+                <div class="toast-title">${title}</div>
+                ${message ? `<div class="toast-message">${message}</div>` : ''}
+            </div>
+            <button class="toast-close" onclick="closeToast(this.parentElement)">×</button>
+        </div>
+    `;
+    
+    container.appendChild(toast);
+    
+    // Trigger animation
+    setTimeout(() => toast.classList.add('show'), 10);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => closeToast(toast), 5000);
+};
+
+function getToastIcon(type) {
+    switch (type) {
+        case 'success': return '✅';
+        case 'error': return '❌';
+        case 'warning': return '⚠️';
+        case 'info': return 'ℹ️';
+        default: return 'ℹ️';
+    }
+}
+
+window.closeToast = function(toast) {
+    toast.classList.add('hiding');
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 300);
 };
 
 function updateGridLayout() {
