@@ -28,9 +28,9 @@ builder.Services.AddAzureClients(clientBuilder =>
     clientBuilder.AddTableServiceClient(builder.Configuration["readrqueues:tableServiceUri"]!).WithName("readrqueues");
 });
 
-// Register feed source service
-// builder.Services.AddSingleton<IFeedSource, FileFeedSource>();
-builder.Services.AddSingleton<IFeedSource, AzureBlobFeedSource>();
+// Register unified feed management service (replaces both IFeedSource and IFeedManagementService)
+// builder.Services.AddScoped<IFeedManagementService, FileFeedService>();
+builder.Services.AddScoped<IFeedManagementService, AzureBlobFeedService>();
 
 // Register feed parser service
 builder.Services.AddScoped<IFeedParser, FeedParser>();
@@ -38,9 +38,6 @@ builder.Services.AddScoped<IFeedParser, FeedParser>();
 // Add new cache and page services
 builder.Services.AddScoped<IFeedCacheService, FeedCacheService>();
 builder.Services.AddScoped<IHomePageService, HomePageService>();
-
-// Add feed management service
-builder.Services.AddScoped<IFeedManagementService, FeedManagementService>();
 
 // Add background service for queue monitoring
 builder.Services.AddHostedService<QueueBackgroundService>();

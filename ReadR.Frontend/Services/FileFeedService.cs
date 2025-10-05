@@ -1,50 +1,102 @@
-using Azure.Storage.Blobs;
-using Microsoft.Extensions.Azure;
 using ReadR.Frontend.Models;
 using ReadR.Shared.Services;
 
 namespace ReadR.Frontend.Services;
 
-public class FeedManagementService : IFeedManagementService
+public class FileFeedService : IFeedManagementService
 {
+    private readonly string _filePath;
     private readonly IFeedParser _feedParser;
-    private readonly IFeedSource _feedSource;
-    private readonly IFeedCacheService _feedCacheService;
-    private readonly ILogger<FeedManagementService> _logger;
-    private readonly BlobServiceClient? _blobServiceClient;
-    private readonly string _containerName;
-    private readonly string _blobName;
-    private readonly bool _useAzureStorage;
+    private readonly ILogger<FileFeedService> _logger;
 
-    public FeedManagementService(
+    public FileFeedService(
         IFeedParser feedParser,
-        IFeedSource feedSource,
-        IFeedCacheService feedCacheService,
-        ILogger<FeedManagementService> logger,
-        IConfiguration configuration,
-        IAzureClientFactory<BlobServiceClient>? azureClientFactory = null)
+        ILogger<FileFeedService> logger)
     {
         _feedParser = feedParser;
-        _feedSource = feedSource;
-        _feedCacheService = feedCacheService;
         _logger = logger;
-        
-        // Check if we're using Azure storage
-        _useAzureStorage = _feedSource is AzureBlobFeedSource;
-        
-        if (_useAzureStorage && azureClientFactory != null)
-        {
-            _blobServiceClient = azureClientFactory.CreateClient("readrblobs");
-            _containerName = configuration["Azure:Blob:FeedContainer"] ?? "feeds";
-            _blobName = configuration["Azure:Blob:FeedFileName"] ?? "feed-urls.txt";
-        }
-        else
-        {
-            _containerName = string.Empty;
-            _blobName = string.Empty;
-        }
+        _filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "feed-urls.txt");
     }
 
+    // Feed source methods (from IFeedSource)
+    public async Task<List<string>> GetFeedUrlsAsync()
+    {
+        var categorizedFeeds = await GetCategorizedFeedsAsync();
+        return categorizedFeeds.GetAllFeedUrls();
+    }
+
+    public async Task<CategorizedFeeds> GetCategorizedFeedsAsync()
+    {
+        var categorizedFeeds = new CategorizedFeeds();
+
+        try
+        {
+            if (!File.Exists(_filePath))
+            {
+                _logger.LogError("Feed URLs file not found at: {FilePath}", _filePath);
+                return categorizedFeeds;
+            }
+
+            var lines = await File.ReadAllLinesAsync(_filePath);
+            FeedCategory? currentCategory = null;
+
+            foreach (var line in lines)
+            {
+                var trimmedLine = line.Trim();
+
+                // Skip empty lines
+                if (string.IsNullOrWhiteSpace(trimmedLine))
+                {
+                    continue;
+                }
+
+                // Check if this is a category header (starts with #)
+                if (trimmedLine.StartsWith('#'))
+                {
+                    var categoryName = trimmedLine.Substring(1).Trim();
+                    currentCategory = new FeedCategory { Name = categoryName };
+                    categorizedFeeds.Categories.Add(currentCategory);
+                    continue;
+                }
+
+                // If we don't have a current category, create a default one
+                if (currentCategory == null)
+                {
+                    currentCategory = new FeedCategory { Name = "Uncategorized" };
+                    categorizedFeeds.Categories.Add(currentCategory);
+                }
+
+                // Validate that the line is a valid URL
+                if (
+                    Uri.TryCreate(trimmedLine, UriKind.Absolute, out var uri)
+                    && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
+                )
+                {
+                    currentCategory.FeedUrls.Add(trimmedLine);
+                }
+                else
+                {
+                    _logger.LogWarning("Invalid URL found in feed file: {Url}", trimmedLine);
+                }
+            }
+
+            var totalUrls = categorizedFeeds.GetAllFeedUrls().Count;
+            _logger.LogInformation(
+                "Loaded {Count} feed URLs in {CategoryCount} categories from file: {FilePath}",
+                totalUrls,
+                categorizedFeeds.Categories.Count,
+                _filePath
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to read feed URLs from file: {FilePath}", _filePath);
+        }
+
+        return categorizedFeeds;
+    }
+
+    // Feed management methods
     public async Task<FeedValidationResult> ValidateFeedAsync(string feedUrl)
     {
         var result = new FeedValidationResult();
@@ -136,18 +188,8 @@ public class FeedManagementService : IFeedManagementService
                 return result;
             }
 
-            // Add the feed to the storage
-            if (_useAzureStorage && _blobServiceClient != null)
-            {
-                await AddFeedToAzureStorageAsync(feedUrl, category);
-            }
-            else
-            {
-                await AddFeedToLocalFileAsync(feedUrl, category);
-            }
-
-            // Refresh the cache to include the new feed
-            await _feedCacheService.RefreshCacheAsync();
+            // Add the feed to the local file
+            await AddFeedToLocalFileAsync(feedUrl, category);
 
             result.Success = true;
             _logger.LogInformation("Successfully added feed: {FeedUrl} to category: {Category}", feedUrl, category);
@@ -175,18 +217,8 @@ public class FeedManagementService : IFeedManagementService
                 return result;
             }
 
-            // Remove the feed from storage
-            if (_useAzureStorage && _blobServiceClient != null)
-            {
-                await RemoveFeedFromAzureStorageAsync(feedUrl);
-            }
-            else
-            {
-                await RemoveFeedFromLocalFileAsync(feedUrl);
-            }
-
-            // Refresh the cache to reflect the removal
-            await _feedCacheService.RefreshCacheAsync();
+            // Remove the feed from local file
+            await RemoveFeedFromLocalFileAsync(feedUrl);
 
             result.Success = true;
             _logger.LogInformation("Successfully removed feed: {FeedUrl}", feedUrl);
@@ -204,7 +236,7 @@ public class FeedManagementService : IFeedManagementService
     {
         try
         {
-            var categorizedFeeds = await _feedSource.GetCategorizedFeedsAsync();
+            var categorizedFeeds = await GetCategorizedFeedsAsync();
             var allFeedUrls = categorizedFeeds.GetAllFeedUrls();
             
             // Normalize URLs for comparison
@@ -218,78 +250,32 @@ public class FeedManagementService : IFeedManagementService
         }
     }
 
-    private async Task AddFeedToAzureStorageAsync(string feedUrl, string category)
-    {
-        if (_blobServiceClient == null)
-            throw new InvalidOperationException("Azure Blob Service Client is not initialized");
-
-        var blobContainerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-        await blobContainerClient.CreateIfNotExistsAsync();
-
-        var blobClient = blobContainerClient.GetBlobClient(_blobName);
-
-        // Download current content
-        string currentContent = "";
-        if (await blobClient.ExistsAsync())
-        {
-            var response = await blobClient.DownloadContentAsync();
-            currentContent = response.Value.Content.ToString();
-        }
-
-        // Add the new feed to the appropriate category
-        var updatedContent = AddFeedToContent(currentContent, feedUrl, category);
-
-        // Upload updated content
-        await blobClient.UploadAsync(BinaryData.FromString(updatedContent), overwrite: true);
-    }
-
+    // Private helper methods
     private async Task AddFeedToLocalFileAsync(string feedUrl, string category)
     {
-        var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "feed-urls.txt");
-        
         string currentContent = "";
-        if (File.Exists(filePath))
+        if (File.Exists(_filePath))
         {
-            currentContent = await File.ReadAllTextAsync(filePath);
+            currentContent = await File.ReadAllTextAsync(_filePath);
         }
 
         var updatedContent = AddFeedToContent(currentContent, feedUrl, category);
 
         // Ensure directory exists
-        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(_filePath)!);
         
-        await File.WriteAllTextAsync(filePath, updatedContent);
-    }
-
-    private async Task RemoveFeedFromAzureStorageAsync(string feedUrl)
-    {
-        if (_blobServiceClient == null)
-            throw new InvalidOperationException("Azure Blob Service Client is not initialized");
-
-        var blobContainerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-        var blobClient = blobContainerClient.GetBlobClient(_blobName);
-
-        if (!await blobClient.ExistsAsync())
-            return;
-
-        var response = await blobClient.DownloadContentAsync();
-        var currentContent = response.Value.Content.ToString();
-
-        var updatedContent = RemoveFeedFromContent(currentContent, feedUrl);
-        await blobClient.UploadAsync(BinaryData.FromString(updatedContent), overwrite: true);
+        await File.WriteAllTextAsync(_filePath, updatedContent);
     }
 
     private async Task RemoveFeedFromLocalFileAsync(string feedUrl)
     {
-        var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "feed-urls.txt");
-        
-        if (!File.Exists(filePath))
+        if (!File.Exists(_filePath))
             return;
 
-        var currentContent = await File.ReadAllTextAsync(filePath);
+        var currentContent = await File.ReadAllTextAsync(_filePath);
         var updatedContent = RemoveFeedFromContent(currentContent, feedUrl);
         
-        await File.WriteAllTextAsync(filePath, updatedContent);
+        await File.WriteAllTextAsync(_filePath, updatedContent);
     }
 
     private string AddFeedToContent(string content, string feedUrl, string category)

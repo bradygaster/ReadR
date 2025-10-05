@@ -6,13 +6,11 @@ namespace ReadR.Shared.Services;
 
 public class FeedParser : IFeedParser
 {
-    private readonly IFeedSource _feedSource;
     private readonly HttpClient _httpClient;
     private readonly ILogger<FeedParser> _logger;
 
-    public FeedParser(IFeedSource feedSource, HttpClient httpClient, ILogger<FeedParser> logger)
+    public FeedParser(HttpClient httpClient, ILogger<FeedParser> logger)
     {
-        _feedSource = feedSource;
         _httpClient = httpClient;
         _logger = logger;
     }
@@ -91,65 +89,6 @@ public class FeedParser : IFeedParser
         }
 
         return entries;
-    }
-
-    public async Task<List<FeedEntry>> ParseAllFeedsAsync()
-    {
-        var allEntries = new List<FeedEntry>();
-        var categorizedFeeds = await _feedSource.GetCategorizedFeedsAsync();
-
-        var tasks = new List<Task<List<FeedEntry>>>();
-        var feedUrls = new List<string>();
-
-        foreach (var category in categorizedFeeds.Categories)
-        {
-            foreach (var feedUrl in category.FeedUrls)
-            {
-                tasks.Add(ParseFeedAsync(feedUrl, category.Name));
-                feedUrls.Add(feedUrl);
-            }
-        }
-
-        var results = await Task.WhenAll(tasks);
-        var successCount = 0;
-        var failedCount = 0;
-
-        for (int i = 0; i < results.Length; i++)
-        {
-            var entries = results[i];
-            if (entries.Count > 0)
-            {
-                allEntries.AddRange(entries);
-                successCount++;
-            }
-            else
-            {
-                failedCount++;
-                _logger.LogDebug(
-                    "Feed returned no entries (likely failed): {FeedUrl}",
-                    feedUrls[i]
-                );
-            }
-        }
-
-        _logger.LogInformation(
-            "Parsed feeds: {SuccessCount} successful, {FailedCount} failed, {TotalEntries} total entries",
-            successCount,
-            failedCount,
-            allEntries.Count
-        );
-
-        // Sort by publish date, newest first
-        return allEntries.OrderByDescending(e => e.PublishDate).ToList();
-    }
-
-    public async Task<Dictionary<string, List<FeedEntry>>> ParseAllFeedsByCategoryAsync()
-    {
-        var allEntries = await ParseAllFeedsAsync();
-
-        return allEntries
-            .GroupBy(entry => entry.SourceCategory ?? "Uncategorized")
-            .ToDictionary(g => g.Key, g => g.OrderByDescending(e => e.PublishDate).ToList());
     }
 
     private static string GetDescription(SyndicationItem item)
@@ -577,31 +516,6 @@ public class FeedParser : IFeedParser
         catch
         {
             return "Unknown Source";
-        }
-    }
-
-    private static string? GetSiteUrlFromFeed(SyndicationFeed feed)
-    {
-        // Try to get the main site URL from feed links
-        var link = feed.Links.FirstOrDefault(l =>
-            l.RelationshipType == "alternate" || string.IsNullOrEmpty(l.RelationshipType)
-        );
-        return link?.Uri.ToString();
-    }
-
-    private static string? GetSiteUrlFromEntry(FeedEntry entry)
-    {
-        if (string.IsNullOrEmpty(entry.Link))
-            return null;
-
-        try
-        {
-            var uri = new Uri(entry.Link);
-            return $"{uri.Scheme}://{uri.Host}";
-        }
-        catch
-        {
-            return null;
         }
     }
 

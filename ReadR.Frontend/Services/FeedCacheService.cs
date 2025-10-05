@@ -8,7 +8,7 @@ public class FeedCacheService : IFeedCacheService
 {
     private readonly IMemoryCache _memoryCache;
     private readonly IFeedParser _feedParser;
-    private readonly IFeedSource _feedSource;
+    private readonly IFeedManagementService _feedManagementService;
     private readonly ILogger<FeedCacheService> _logger;
 
     private const string CACHE_KEY = "all_feeds_data";
@@ -17,13 +17,13 @@ public class FeedCacheService : IFeedCacheService
     public FeedCacheService(
         IMemoryCache memoryCache,
         IFeedParser feedParser,
-        IFeedSource feedSource,
+        IFeedManagementService feedManagementService,
         ILogger<FeedCacheService> logger
     )
     {
         _memoryCache = memoryCache;
         _feedParser = feedParser;
-        _feedSource = feedSource;
+        _feedManagementService = feedManagementService;
         _logger = logger;
     }
 
@@ -90,7 +90,7 @@ public class FeedCacheService : IFeedCacheService
     {
         try
         {
-            var allCategorizedFeeds = await _feedSource.GetCategorizedFeedsAsync();
+            var allCategorizedFeeds = await _feedManagementService.GetCategorizedFeedsAsync();
             var cachedData = new CachedFeedData { LastUpdated = DateTime.UtcNow };
 
             var allEntries = new List<FeedEntry>();

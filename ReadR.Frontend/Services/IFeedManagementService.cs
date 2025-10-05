@@ -4,6 +4,20 @@ namespace ReadR.Frontend.Services;
 
 public interface IFeedManagementService
 {
+    // Feed source methods (from IFeedSource)
+    /// <summary>
+    /// Gets all feed URLs from the system
+    /// </summary>
+    /// <returns>A list of all feed URLs</returns>
+    Task<List<string>> GetFeedUrlsAsync();
+
+    /// <summary>
+    /// Gets feeds organized by categories
+    /// </summary>
+    /// <returns>Categorized feeds structure</returns>
+    Task<CategorizedFeeds> GetCategorizedFeedsAsync();
+
+    // Feed management methods (existing)
     /// <summary>
     /// Validates a feed URL by attempting to parse it
     /// </summary>

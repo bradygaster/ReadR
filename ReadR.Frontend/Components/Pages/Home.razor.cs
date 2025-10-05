@@ -28,6 +28,7 @@ public partial class Home : IDisposable
     [Inject] private NavigationManager Navigation { get; set; } = default!;
     [Inject] private IHomePageService HomePageService { get; set; } = default!;
     [Inject] private IFeedManagementService FeedManagementService { get; set; } = default!;
+    [Inject] private IFeedCacheService FeedCacheService { get; set; } = default!;
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
     [Inject] private ILogger<Home> Logger { get; set; } = default!;
 
@@ -182,7 +183,8 @@ public partial class Home : IDisposable
             
             if (result.Success)
             {
-                // Feed added successfully - refresh the view
+                // Feed added successfully - manually refresh the cache and reload the view
+                await FeedCacheService.RefreshCacheAsync();
                 await LoadViewModel();
                 await JSRuntime.InvokeVoidAsync("showToast", "success", "Feed added successfully!", $"Added {feedUrl}");
                 Logger.LogInformation("Successfully added feed: {FeedUrl}", feedUrl);
