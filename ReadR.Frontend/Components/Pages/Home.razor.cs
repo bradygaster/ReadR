@@ -77,26 +77,22 @@ public partial class Home : ComponentBase, IDisposable
 
         try
         {
-            // Get entries from the last week
-            var lastWeek = DateTime.Now.AddDays(-7);
-            var lastWeekEntries = viewModel.Entries
-                .Where(e => e.PublishDate >= lastWeek)
+            var dateRange = DateTime.Now.AddDays(-7);
+            var recentEntries = viewModel.Entries
+                .Where(e => e.PublishDate >= dateRange)
                 .OrderByDescending(e => e.PublishDate)
-                .Take(50) // Limit to avoid token limits
+                .Take(6)
                 .ToList();
 
-            if (!lastWeekEntries.Any())
+            if (!recentEntries.Any())
             {
-                summaryError = "No entries found from the last week to summarize.";
+                summaryError = "No entries found from the last two weeks to summarize.";
                 return;
             }
 
-            Logger.LogInformation("Generating weekly summary for {Count} entries", lastWeekEntries.Count);
+            Logger.LogInformation("Generating weekly summary for {Count} entries", recentEntries.Count);
             
-            // Add timeout for AI operations
-            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
-            
-            var markdownSummary = await ChatService.SummarizeLastWeeksNews(lastWeekEntries, cts.Token);
+            var markdownSummary = await ChatService.SummarizeLastWeeksNews(recentEntries);
             
             // Convert markdown to HTML
             weeklySummary = MarkdownService.ConvertToHtml(markdownSummary);

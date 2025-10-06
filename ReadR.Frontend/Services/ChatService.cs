@@ -13,18 +13,38 @@ public class ChatService(IChatClient chatClient, ILogger<ChatService> logger)
         {
             logger.LogInformation("Starting weekly news summary generation for {Count} entries", entries.Count());
             
-            var systemPrompt = "You are a concise summarizer of news articles. Given a series of RSS feed entries, you read the articles in those entries and provide a general summary of the news across all the feeds over the last week." +
-                "Your output should be in markdown format, and you should link to the most significant articles throughout the last week's entries in the summary.";
+            var systemPrompt = "You are an expert technical content summarizer specializing in software development news. Given a series of RSS feed entries, analyze and categorize them into distinct topics and themes. " +
+                "Create a comprehensive summary that covers ALL major topics and announcements, not just the most prominent ones. " +
+                "Group related articles together and provide insights about trends, new releases, updates, and technical developments. " +
+                "Your output should be in markdown format with clear sections for different topics. Link to the most significant articles for each topic. " +
+                "Ensure you cover the full breadth of content rather than focusing on just one or two major stories.";
             
             // Build the user message content from the feed entries
             var userContent = new StringBuilder();
-            userContent.AppendLine("Here are the RSS feed entries from the last week:");
+            userContent.AppendLine("Here are the RSS feed entries from recent weeks. Please analyze ALL entries and group them by topic/theme:");
             userContent.AppendLine();
+            userContent.AppendLine($"Total entries to analyze: {entries.Count()}");
+            userContent.AppendLine();
+
+            var entryCount = 0;
+            var addedTitles = new HashSet<string>(); // Basic deduplication
 
             foreach (var entry in entries)
             {
                 // Check for cancellation during processing
                 cancellationToken.ThrowIfCancellationRequested();
+                
+                // Basic deduplication - skip very similar titles
+                if (addedTitles.Any(title => 
+                    string.Equals(title, entry.Title, StringComparison.OrdinalIgnoreCase) ||
+                    (title.Length > 20 && entry.Title.Length > 20 && 
+                     title[..Math.Min(20, title.Length)].Equals(entry.Title[..Math.Min(20, entry.Title.Length)], StringComparison.OrdinalIgnoreCase))))
+                {
+                    continue;
+                }
+
+                addedTitles.Add(entry.Title);
+                entryCount++;
                 
                 userContent.AppendLine($"**Title:** {entry.Title}");
                 userContent.AppendLine($"**Source:** {entry.FeedDisplayName}");
@@ -54,7 +74,7 @@ public class ChatService(IChatClient chatClient, ILogger<ChatService> logger)
 
             var options = new ChatOptions
             {
-                MaxOutputTokens = 4096
+                MaxOutputTokens = 6144 // Increased for more comprehensive summaries
             };
 
             logger.LogInformation("Sending request to AI service for summary generation");
