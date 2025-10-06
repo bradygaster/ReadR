@@ -1,3 +1,4 @@
+using Aspire.Hosting.ApplicationModel;
 using Azure.Provisioning.Storage;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -21,10 +22,10 @@ var frontend = builder.AddProject<Projects.ReadR_Frontend>("frontend")
                       .WithExternalHttpEndpoints()
                       .WaitFor(readrqueues)
                       .WaitFor(readrblobs)
+                      .WithReference(readrblobs)
                       .WithReference(readrqueues)
                       .WithEnvironment("readrblobs__blobServiceUri", readrblobs)
                       .WithEnvironment("readrqueues__queueServiceUri", readrqueues)
-                      .WithReference(readrblobs)
                       //.WithReference(readrinsights)
                       //.WithRoleAssignments(storage,
                       //     StorageBuiltInRole.StorageBlobDataOwner,
