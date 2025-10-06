@@ -13,17 +13,17 @@ public class ChatService(IChatClient chatClient, ILogger<ChatService> logger)
         {
             logger.LogInformation("Starting weekly news summary generation for {Count} entries", entries.Count());
             
-            var systemPrompt = "You are an expert technical content summarizer specializing in software development news. Given a series of RSS feed entries, analyze and categorize them into distinct topics and themes. " +
-                "Create a comprehensive summary that covers ALL major topics and announcements, not just the most prominent ones. " +
-                "Group related articles together and provide insights about trends, new releases, updates, and technical developments. " +
-                "Your output should be in markdown format with clear sections for different topics. Link to the most significant articles for each topic. " +
-                "Ensure you cover the full breadth of content rather than focusing on just one or two major stories.";
+            var systemPrompt = "You are a technical news summarizer. Create a VERY brief summary with:" +
+                "1. A catchy title that captures the week's main theme" +
+                "2. ONE paragraph (3-5 sentences max) that connects the major themes and developments" +
+                "3. Pack the paragraph with inline links to the most important articles - aim for 8-15 links minimum" +
+                "4. Be terse and conversational, not listy or structured" +
+                "5. Focus on connecting themes rather than listing individual stories" +
+                "Format: # [Week Title]\n\n[Dense paragraph with lots of [link text](url) references]";
             
             // Build the user message content from the feed entries
             var userContent = new StringBuilder();
-            userContent.AppendLine("Here are the RSS feed entries from recent weeks. Please analyze ALL entries and group them by topic/theme:");
-            userContent.AppendLine();
-            userContent.AppendLine($"Total entries to analyze: {entries.Count()}");
+            userContent.AppendLine("Create a super terse weekly summary from these entries. Focus on themes and pack it with links:");
             userContent.AppendLine();
 
             var entryCount = 0;
@@ -46,24 +46,13 @@ public class ChatService(IChatClient chatClient, ILogger<ChatService> logger)
                 addedTitles.Add(entry.Title);
                 entryCount++;
                 
-                userContent.AppendLine($"**Title:** {entry.Title}");
-                userContent.AppendLine($"**Source:** {entry.FeedDisplayName}");
-                userContent.AppendLine($"**Published:** {entry.PublishDate:yyyy-MM-dd HH:mm}");
-                userContent.AppendLine($"**Link:** {entry.Link}");
-                if (!string.IsNullOrEmpty(entry.Author))
-                {
-                    userContent.AppendLine($"**Author:** {entry.Author}");
-                }
+                userContent.AppendLine($"Title: {entry.Title}");
+                userContent.AppendLine($"Source: {entry.FeedDisplayName}");
+                userContent.AppendLine($"Link: {entry.Link}");
                 if (!string.IsNullOrEmpty(entry.Description))
                 {
-                    userContent.AppendLine($"**Description:** {entry.Description}");
+                    userContent.AppendLine($"Description: {entry.Description}");
                 }
-                if (entry.Categories?.Any() == true)
-                {
-                    userContent.AppendLine($"**Categories:** {string.Join(", ", entry.Categories)}");
-                }
-                userContent.AppendLine();
-                userContent.AppendLine("---");
                 userContent.AppendLine();
             }
 
@@ -74,7 +63,7 @@ public class ChatService(IChatClient chatClient, ILogger<ChatService> logger)
 
             var options = new ChatOptions
             {
-                MaxOutputTokens = 6144 // Increased for more comprehensive summaries
+                MaxOutputTokens = 1024 // Reduced for concise summaries
             };
 
             logger.LogInformation("Sending request to AI service for summary generation");

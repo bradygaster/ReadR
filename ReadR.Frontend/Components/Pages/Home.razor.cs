@@ -19,9 +19,9 @@ public partial class Home : ComponentBase, IDisposable
     private bool isAddFeedDialogVisible = false;
     private bool isKeyboardHelpVisible = false;
     
-    // Weekly summary state
+    // Current page summary state
     private bool isGeneratingSummary = false;
-    private string? weeklySummary = null;
+    private string? currentPageSummary = null;
     private string? summaryError = null;
     private bool aiSummaryAvailable = true; // New field to track AI availability
     
@@ -60,60 +60,51 @@ public partial class Home : ComponentBase, IDisposable
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, "AI service is not available, disabling weekly summary feature");
+            Logger.LogWarning(ex, "AI service is not available, disabling summary feature");
             aiSummaryAvailable = false;
         }
     }
 
-    private async Task GenerateWeeklySummary()
+    private async Task GenerateCurrentPageSummary()
     {
-        if (isGeneratingSummary || viewModel.Entries == null || !viewModel.Entries.Any() || !aiSummaryAvailable)
+        if (isGeneratingSummary || !aiSummaryAvailable)
+            return;
+
+        var currentEntries = CurrentPageEntries;
+        if (!currentEntries.Any())
             return;
 
         isGeneratingSummary = true;
         summaryError = null;
-        weeklySummary = null;
+        currentPageSummary = null;
         StateHasChanged();
 
         try
         {
-            var dateRange = DateTime.Now.AddDays(-7);
-            var recentEntries = viewModel.Entries
-                .Where(e => e.PublishDate >= dateRange)
-                .OrderByDescending(e => e.PublishDate)
-                .Take(6)
-                .ToList();
-
-            if (!recentEntries.Any())
-            {
-                summaryError = "No entries found from the last two weeks to summarize.";
-                return;
-            }
-
-            Logger.LogInformation("Generating weekly summary for {Count} entries", recentEntries.Count);
+            Logger.LogInformation("Generating summary for {Count} current page entries", currentEntries.Count);
             
-            var markdownSummary = await ChatService.SummarizeLastWeeksNews(recentEntries);
+            var markdownSummary = await ChatService.SummarizeLastWeeksNews(currentEntries);
             
             // Convert markdown to HTML
-            weeklySummary = MarkdownService.ConvertToHtml(markdownSummary);
+            currentPageSummary = MarkdownService.ConvertToHtml(markdownSummary);
             
-            Logger.LogInformation("Successfully generated weekly summary");
+            Logger.LogInformation("Successfully generated current page summary");
         }
         catch (OperationCanceledException)
         {
-            Logger.LogWarning("Weekly summary generation timed out");
+            Logger.LogWarning("Current page summary generation timed out");
             // Hide the entire AI summary feature on timeout
             aiSummaryAvailable = false;
             summaryError = null;
-            weeklySummary = null;
+            currentPageSummary = null;
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to generate weekly summary, disabling AI summary feature");
+            Logger.LogError(ex, "Failed to generate current page summary, disabling AI summary feature");
             // On any AI-related error, disable the feature entirely
             aiSummaryAvailable = false;
             summaryError = null;
-            weeklySummary = null;
+            currentPageSummary = null;
         }
         finally
         {
@@ -216,6 +207,11 @@ public partial class Home : ComponentBase, IDisposable
             return;
 
         viewModel = await HomePageService.GetHomeViewModelAsync(newPage);
+        
+        // Clear the summary when page changes since it's for the current page
+        currentPageSummary = null;
+        summaryError = null;
+        
         StateHasChanged();
         
         // Reset selection to first card when page changes

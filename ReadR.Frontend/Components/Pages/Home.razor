@@ -29,36 +29,38 @@
         }
         else if (viewModel.Entries?.Any() == true && CurrentPageEntries.Any())
         {
-            <!-- Weekly Summary Section - Only show if AI is available -->
+            <!-- Current Page Summary Section - Only show if AI is available -->
             @if (aiSummaryAvailable)
             {
-                <div class="weekly-summary-section">
-                    <div class="summary-header">
-                        <h3>📰 Weekly News Summary</h3>
-                        <button class="btn btn-primary" @onclick="GenerateWeeklySummary" disabled="@isGeneratingSummary">
-                            @if (isGeneratingSummary)
-                            {
-                                <span>🤖 Generating...</span>
-                            }
-                            else
-                            {
-                                <span>Generate Summary</span>
-                            }
-                        </button>
+                <div class="navigation-container">
+                    <div class="weekly-summary-section">
+                        <div class="summary-header">
+                            <h3>📰 Current Page Summary</h3>
+                            <button class="btn btn-primary" @onclick="GenerateCurrentPageSummary" disabled="@isGeneratingSummary">
+                                @if (isGeneratingSummary)
+                                {
+                                    <span>🤖 Generating...</span>
+                                }
+                                else
+                                {
+                                    <span>Summarize These Articles</span>
+                                }
+                            </button>
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(currentPageSummary))
+                        {
+                            <div class="summary-content">
+                                @((MarkupString)currentPageSummary)
+                            </div>
+                        }
+                        else if (summaryError != null)
+                        {
+                            <div class="summary-error">
+                                <p>⚠️ Error generating summary: @summaryError</p>
+                            </div>
+                        }
                     </div>
-                    
-                    @if (!string.IsNullOrEmpty(weeklySummary))
-                    {
-                        <div class="summary-content">
-                            @((MarkupString)weeklySummary)
-                        </div>
-                    }
-                    else if (summaryError != null)
-                    {
-                        <div class="summary-error">
-                            <p>⚠️ Error generating summary: @summaryError</p>
-                        </div>
-                    }
                 </div>
             }
 
