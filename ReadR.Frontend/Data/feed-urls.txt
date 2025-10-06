@@ -1,2 +1,2 @@
 # Feed list
-https://github.com/bradygaster/ReadR/commits.atom
+https://devblogs.microsoft.com/dotnet/feed/ 

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ReadR.Frontend.Components.Pages;
 
-public partial class Home : IDisposable
+public partial class Home : ComponentBase, IDisposable
 {
     [Parameter] public string? FeedSlug { get; set; }
 
@@ -19,6 +19,12 @@ public partial class Home : IDisposable
     private bool isAddFeedDialogVisible = false;
     private bool isKeyboardHelpVisible = false;
     
+    // Weekly summary state
+    private bool isGeneratingSummary = false;
+    private string? weeklySummary = null;
+    private string? summaryError = null;
+    private bool aiSummaryAvailable = true; // New field to track AI availability
+    
     // Keyboard navigation state
     private int selectedCardIndex = 0;
     private int totalCards = 0;
@@ -29,8 +35,96 @@ public partial class Home : IDisposable
     [Inject] private IHomePageService HomePageService { get; set; } = default!;
     [Inject] private IFeedManagementService FeedManagementService { get; set; } = default!;
     [Inject] private IFeedCacheService FeedCacheService { get; set; } = default!;
+    [Inject] private ChatService ChatService { get; set; } = default!;
+    [Inject] private IMarkdownService MarkdownService { get; set; } = default!;
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
     [Inject] private ILogger<Home> Logger { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Check AI availability on initialization
+        await CheckAiAvailabilityAsync();
+    }
+
+    private async Task CheckAiAvailabilityAsync()
+    {
+        try
+        {
+            Logger.LogInformation("Checking AI service availability");
+            
+            // Use the enhanced availability check from ChatService
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            aiSummaryAvailable = await ChatService.IsAvailableAsync(cts.Token);
+            
+            Logger.LogInformation("AI service availability check completed: {Available}", aiSummaryAvailable);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "AI service is not available, disabling weekly summary feature");
+            aiSummaryAvailable = false;
+        }
+    }
+
+    private async Task GenerateWeeklySummary()
+    {
+        if (isGeneratingSummary || viewModel.Entries == null || !viewModel.Entries.Any() || !aiSummaryAvailable)
+            return;
+
+        isGeneratingSummary = true;
+        summaryError = null;
+        weeklySummary = null;
+        StateHasChanged();
+
+        try
+        {
+            // Get entries from the last week
+            var lastWeek = DateTime.Now.AddDays(-7);
+            var lastWeekEntries = viewModel.Entries
+                .Where(e => e.PublishDate >= lastWeek)
+                .OrderByDescending(e => e.PublishDate)
+                .Take(50) // Limit to avoid token limits
+                .ToList();
+
+            if (!lastWeekEntries.Any())
+            {
+                summaryError = "No entries found from the last week to summarize.";
+                return;
+            }
+
+            Logger.LogInformation("Generating weekly summary for {Count} entries", lastWeekEntries.Count);
+            
+            // Add timeout for AI operations
+            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+            
+            var markdownSummary = await ChatService.SummarizeLastWeeksNews(lastWeekEntries, cts.Token);
+            
+            // Convert markdown to HTML
+            weeklySummary = MarkdownService.ConvertToHtml(markdownSummary);
+            
+            Logger.LogInformation("Successfully generated weekly summary");
+        }
+        catch (OperationCanceledException)
+        {
+            Logger.LogWarning("Weekly summary generation timed out");
+            // Hide the entire AI summary feature on timeout
+            aiSummaryAvailable = false;
+            summaryError = null;
+            weeklySummary = null;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to generate weekly summary, disabling AI summary feature");
+            // On any AI-related error, disable the feature entirely
+            aiSummaryAvailable = false;
+            summaryError = null;
+            weeklySummary = null;
+        }
+        finally
+        {
+            isGeneratingSummary = false;
+            StateHasChanged();
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

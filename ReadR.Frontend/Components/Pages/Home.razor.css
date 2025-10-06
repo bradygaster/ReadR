@@ -23,6 +23,112 @@
     min-height: calc(100vh - 120px); /* Account for navbar height */
 }
 
+/* Weekly Summary Section */
+.weekly-summary-section {
+    margin-bottom: 2rem;
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.summary-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.summary-content {
+    background-color: var(--bg-primary);
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.summary-content h1, .summary-content h2, .summary-content h3 {
+    color: var(--text-primary);
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.summary-content h1:first-child, .summary-content h2:first-child, .summary-content h3:first-child {
+    margin-top: 0;
+}
+
+.summary-content a {
+    color: var(--accent-primary);
+    text-decoration: none;
+}
+
+.summary-content a:hover {
+    text-decoration: underline;
+}
+
+.summary-content ul, .summary-content ol {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.summary-content p {
+    margin-bottom: 1rem;
+}
+
+.summary-content blockquote {
+    border-left: 4px solid var(--accent-primary);
+    margin: 1rem 0;
+    padding-left: 1rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.summary-error {
+    background-color: var(--bg-danger, #fee);
+    border: 1px solid var(--border-danger, #fcc);
+    border-radius: 8px;
+    padding: 1rem;
+    color: var(--text-danger, #d00);
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background-color: var(--accent-primary);
+    color: var(--text-inverse);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--accent-primary-dark, var(--accent-primary));
+    transform: translateY(-1px);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
 /* Sidebar Header */
 .sidebar-header {
     padding: 1.5rem;
@@ -162,6 +268,16 @@
     .app-container {
         flex-direction: column;
     }
+    
+    .summary-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .summary-header h3 {
+        text-align: center;
+    }
 }
 
 /* Ensure main content has proper spacing */
@@ -177,4 +293,12 @@
 
 ::deep .navigation-container {
     margin-top: 1rem;
+}
+
+/* Navigation container styles for this page */
+.navigation-container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
 }

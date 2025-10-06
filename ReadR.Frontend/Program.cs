@@ -39,6 +39,13 @@ builder.Services.AddScoped<IFeedParser, FeedParser>();
 builder.Services.AddScoped<IFeedCacheService, FeedCacheService>();
 builder.Services.AddScoped<IHomePageService, HomePageService>();
 
+// Add markdown processing service
+builder.Services.AddScoped<IMarkdownService, MarkdownService>();
+
+// Add OpenAI and chat service
+builder.AddAzureOpenAi();
+builder.Services.AddSingleton<ChatService>();
+
 // Add background service for queue monitoring
 builder.Services.AddHostedService<QueueBackgroundService>();
 
