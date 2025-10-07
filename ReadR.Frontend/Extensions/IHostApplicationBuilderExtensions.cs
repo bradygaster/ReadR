@@ -86,12 +86,14 @@ public class NullChatClient : IChatClient
         throw new InvalidOperationException("AI service is not available. Please check your configuration.");
     }
 
-    public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> chatMessages, 
         ChatOptions? options = null, 
-        CancellationToken cancellationToken = default)
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new InvalidOperationException("AI service is not available. Please check your configuration.");
+        // Return empty enumerable instead of throwing to allow availability checks to work
+        await Task.CompletedTask;
+        yield break;
     }
 
     public TService? GetService<TService>(object? key = null) where TService : class
