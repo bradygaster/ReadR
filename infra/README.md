@@ -7,7 +7,6 @@ This directory contains the Bicep templates for deploying Azure OpenAI resources
 - `main.bicep` - Main Bicep template that deploys:
   - Azure OpenAI Service with managed identity authentication
   - GPT-4o-mini model deployment
-  - GPT-4o model deployment
   - RBAC role assignment for accessing the service
 
 - `main.parameters.json` - Parameters file for the Bicep template
@@ -50,12 +49,6 @@ az deployment group create `
 
 ## Model Deployments
 
-The template deploys two OpenAI models:
+The template deploys one OpenAI model:
 
 1. **GPT-4o-mini** - Optimized for speed and cost-effectiveness
-2. **GPT-4o** - Full-featured GPT-4 model
-
-Both models are configured with:
-- Standard pricing tier
-- Automatic version upgrades when new default versions are available
-- Microsoft's default responsible AI policy

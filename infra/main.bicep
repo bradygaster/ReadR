@@ -59,28 +59,6 @@ resource gpt4oMiniDeployment 'Microsoft.CognitiveServices/accounts/deployments@2
   }
 }
 
-// GPT-4o deployment
-resource gpt4oDeployment 'Microsoft.CognitiveServices/accounts/deployments@2025-06-01' = {
-  parent: openAiService
-  name: 'gpt-4o'
-  properties: {
-    model: {
-      format: 'OpenAI'
-      name: 'gpt-4o'
-      version: '2024-08-06'
-    }
-    versionUpgradeOption: 'OnceNewDefaultVersionAvailable'
-    raiPolicyName: 'Microsoft.Default'
-  }
-  sku: {
-    name: 'Standard'
-    capacity: 10
-  }
-  dependsOn: [
-    gpt4oMiniDeployment
-  ]
-}
-
 // Role assignment for the principal to access Azure OpenAI
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(openAiService.id, principalId, cognitiveServicesUserRoleId)
@@ -97,4 +75,3 @@ output openAiEndpoint string = openAiService.properties.endpoint
 output openAiName string = openAiService.name
 output openAiResourceId string = openAiService.id
 output gpt4oMiniDeploymentName string = gpt4oMiniDeployment.name
-output gpt4oDeploymentName string = gpt4oDeployment.name

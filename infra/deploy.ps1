@@ -82,14 +82,12 @@ if ($LASTEXITCODE -ne 0) {
 $endpoint = $deploymentResult.properties.outputs.openAiEndpoint.value
 $openAiName = $deploymentResult.properties.outputs.openAiName.value
 $gpt4oMiniDeployment = $deploymentResult.properties.outputs.gpt4oMiniDeploymentName.value
-$gpt4oDeployment = $deploymentResult.properties.outputs.gpt4oDeploymentName.value
 
 Write-Host "`nDeployment completed successfully!" -ForegroundColor Green
 Write-Host "Azure OpenAI Details:" -ForegroundColor Cyan
 Write-Host "  Service Name: $openAiName" -ForegroundColor White
 Write-Host "  Endpoint: $endpoint" -ForegroundColor White
 Write-Host "  GPT-4o-mini Deployment: $gpt4oMiniDeployment" -ForegroundColor White
-Write-Host "  GPT-4o Deployment: $gpt4oDeployment" -ForegroundColor White
 
 Write-Host "`nNext steps:" -ForegroundColor Yellow
 Write-Host "1. Configure user secrets for your application:" -ForegroundColor White
