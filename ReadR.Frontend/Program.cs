@@ -21,11 +21,6 @@ builder.Services.AddHttpClient<FeedParser>(client =>
 builder.Services.AddAzureClients(clientBuilder =>
 {
     clientBuilder.AddBlobServiceClient(builder.Configuration["readrblobs:blobServiceUri"]!).WithName("readrblobs");
-    clientBuilder.AddQueueServiceClient(builder.Configuration["readrblobs:queueServiceUri"]!).WithName("readrblobs");
-    clientBuilder.AddTableServiceClient(builder.Configuration["readrblobs:tableServiceUri"]!).WithName("readrblobs");
-    clientBuilder.AddBlobServiceClient(builder.Configuration["readrqueues:blobServiceUri"]!).WithName("readrqueues");
-    clientBuilder.AddQueueServiceClient(builder.Configuration["readrqueues:queueServiceUri"]!).WithName("readrqueues");
-    clientBuilder.AddTableServiceClient(builder.Configuration["readrqueues:tableServiceUri"]!).WithName("readrqueues");
 });
 
 // Register unified feed management service (replaces both IFeedSource and IFeedManagementService)
@@ -45,9 +40,6 @@ builder.Services.AddScoped<IMarkdownService, MarkdownService>();
 // Add OpenAI and chat service
 builder.AddAzureOpenAi();
 builder.Services.AddSingleton<ChatService>();
-
-// Add background service for queue monitoring
-builder.Services.AddHostedService<QueueBackgroundService>();
 
 // Application Insights telemetry configuration
 //builder.Services.AddApplicationInsightsTelemetry(new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions
