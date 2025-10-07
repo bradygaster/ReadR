@@ -24,8 +24,8 @@ builder.Services.AddAzureClients(clientBuilder =>
 });
 
 // Register unified feed management service (replaces both IFeedSource and IFeedManagementService)
-// builder.Services.AddScoped<IFeedManagementService, FileFeedService>();
-builder.Services.AddScoped<IFeedManagementService, AzureBlobFeedService>();
+builder.Services.AddScoped<IFeedManagementService, FileFeedService>();
+// builder.Services.AddScoped<IFeedManagementService, AzureBlobFeedService>();
 
 // Register feed parser service
 builder.Services.AddScoped<IFeedParser, FeedParser>();
@@ -42,14 +42,14 @@ builder.AddAzureOpenAi();
 builder.Services.AddSingleton<ChatService>();
 
 // Application Insights telemetry configuration
-//builder.Services.AddApplicationInsightsTelemetry(new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions
-//{
-//    ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
-//});
-//builder.Services.AddApplicationInsightsTelemetry(new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions
-//{
-//    ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
-//});
+builder.Services.AddApplicationInsightsTelemetry(new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions
+{
+    ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
+});
+builder.Services.AddApplicationInsightsTelemetry(new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions
+{
+    ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
+});
 
 var app = builder.Build();
 

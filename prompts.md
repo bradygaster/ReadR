@@ -8,3 +8,5 @@ can you use `dotnet user-secrets` to set the AZURE_OPENAI_ENDPOINT and AZURE_OPE
 
 
 Find the Azure AI Foundry resource in my subscription and tell me its name. Then, list all models deployed in that resource.
+
+Use `dotnet user-secrets` to set the `AZURE_OPENAI_ENDPOINT` to the "OpenAI-friendly" AI Foundry endpoint. Set `AZURE_OPENAI_MODEL_NAME` to the gpt-4o deployment I have in it. 
