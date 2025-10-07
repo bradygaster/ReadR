@@ -98,41 +98,4 @@ public class ChatService(IChatClient chatClient, ILogger<ChatService> logger)
             throw new InvalidOperationException("Failed to generate weekly summary. The AI service may be unavailable.", ex);
         }
     }
-    
-    public async Task<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            logger.LogInformation("Checking AI service availability");
-            
-            // Perform a minimal test to verify the service is responsive using streaming
-            var testMessages = new ChatMessage[]
-            {
-                new(ChatRole.User, "Test")
-            };
-            
-            var options = new ChatOptions
-            {
-                MaxOutputTokens = 10
-            };
-            
-            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
-            
-            var responseStream = chatClient.GetStreamingResponseAsync(testMessages, options, combinedCts.Token);
-            
-            // Try to get the first response chunk to verify the service is responsive
-            await using var enumerator = responseStream.GetAsyncEnumerator(combinedCts.Token);
-            bool hasResponse = await enumerator.MoveNextAsync();
-            
-            logger.LogInformation("AI service availability check result: {Available}", hasResponse);
-            
-            return hasResponse;
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning(ex, "AI service availability check failed");
-            return false;
-        }
-    }
 }
