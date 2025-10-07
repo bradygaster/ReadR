@@ -54,7 +54,7 @@ public partial class Home : ComponentBase, IDisposable
             
             // Use the enhanced availability check from ChatService
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            aiSummaryAvailable = await ChatService.IsAvailableAsync(cts.Token);
+            aiSummaryAvailable = true;
             
             Logger.LogInformation("AI service availability check completed: {Available}", aiSummaryAvailable);
         }

@@ -1,6 +1,6 @@
 <Solution>
   <Folder Name="/Solution Items/">
-    <File Path="prompts.txt" />
+    <File Path="prompts.md" />
     <File Path="README.md" />
   </Folder>
   <Project Path="ReadR.AppHost/ReadR.AppHost.csproj" Id="49b47c87-ca6a-4561-a9ce-48629b59c13a" />

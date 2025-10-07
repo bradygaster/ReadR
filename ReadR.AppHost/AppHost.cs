@@ -15,7 +15,7 @@ var readrinsights = builder.AddAzureApplicationInsights("readrinsights");
 builder.AddAzureContainerAppEnvironment("readracaenv");
 
 // azure storage
-var storage = builder.AddAzureStorage("readrstorage")/*.RunAsEmulator()*/;
+var storage = builder.AddAzureStorage("readrstorage").RunAsEmulator();
 var readrblobs = storage.AddBlobs("readrblobs");
 
 // ai foundry
