@@ -104,6 +104,10 @@ html, body {
     padding: 2rem;
     line-height: 1.7;
     color: var(--text-secondary);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
 }
 
 .summary-content h1,
@@ -1827,4 +1831,29 @@ a:hover {
     .entry-counter {
         justify-content: center;
     }
+}
+
+/* Selected summary content and error styles */
+.summary-content.selected, .summary-error.selected {
+    position: relative;
+    background: var(--bg-elevated);
+    border: 2px solid var(--accent-primary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    z-index: 1;
+    animation: selectedPulse 2s infinite;
+}
+
+.summary-content.selected::before, .summary-error.selected::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    border-radius: var(--radius-lg);
+    z-index: -1;
+    animation: selectedPulse 2s infinite;
+    opacity: 0.6;
 }

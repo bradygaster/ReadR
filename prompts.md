@@ -6,6 +6,7 @@ can you use `dotnet user-secrets` to set the AZURE_OPENAI_ENDPOINT and AZURE_OPE
 
 
 
+## These two together seem to get it 
 
 Find the Azure AI Foundry resource in my subscription and tell me its name. Then, list all models deployed in that resource.
 

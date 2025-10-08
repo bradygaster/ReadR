@@ -33,9 +33,13 @@
             <NextButton HomeViewModel="HomeViewModel" PageChanged="(indx) => PageChanged.InvokeAsync(indx)" />
         </div>
         
-        <!-- Add Feed Button - Far Right -->
-        <div class="nav-actions">
-            <button class="btn btn-add-feed" type="button" @onclick="OnAddFeedClick" title="Add new RSS/Atom feed">
+        <!-- Actions - Far Right -->
+        <div class="nav-actions d-flex gap-2">
+            <button class="btn btn-primary" type="button" @onclick="OnSummarizeClick" title="Summarize current articles" disabled="@IsSummarizing">
+                <span class="btn-icon">🤖</span>
+                <span class="btn-text">Summarize</span>
+            </button>
+            <button class="btn btn-primary" type="button" @onclick="OnAddFeedClick" title="Add new RSS/Atom feed">
                 <span class="btn-icon">➕</span>
                 <span class="btn-text">Add Feed</span>
             </button>
@@ -47,6 +51,8 @@
     [Parameter] public int FeedCount { get; set; }
     [Parameter] public int EntryCount { get; set; }
     [Parameter] public EventCallback OnAddFeedClick { get; set; }
+    [Parameter] public EventCallback OnSummarizeClick { get; set; }
+    [Parameter] public bool IsSummarizing { get; set; }
     
     [Inject] private NavigationManager Navigation { get; set; } = default!;
 

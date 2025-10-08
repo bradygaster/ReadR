@@ -10,12 +10,14 @@
 
 <div class="app-container">
     <!-- Navigation Bar -->
-    <NavBar FeedCount="viewModel.TotalFeedCount" 
+    <NavBar FeedCount="viewModel.TotalFeedCount"
             EntryCount="viewModel.TotalEntryCount"
             HomeViewModel="viewModel"
             OnAddFeedClick="ShowAddFeedDialog"
-            PageChanged="OnPageChangedAsync" />
-    
+            OnSummarizeClick="GenerateCurrentPageSummary"
+            PageChanged="OnPageChangedAsync"
+            IsSummarizing="isGeneratingSummary" />
+
     <!-- Main Content -->
     <div class="main-content">
 
@@ -30,42 +32,30 @@
         else if (viewModel.Entries?.Any() == true && CurrentPageEntries.Any())
         {
             <!-- Current Page Summary Section - Only show if AI is available -->
-            @if (aiSummaryAvailable)
-            {
-                <div class="navigation-container">
-                    <div class="weekly-summary-section">
-                        <div class="summary-header">
-                            <h3>📰 Current Page Summary</h3>
-                            <button class="btn btn-primary" @onclick="GenerateCurrentPageSummary" disabled="@isGeneratingSummary">
-                                @if (isGeneratingSummary)
-                                {
-                                    <span>🤖 Generating...</span>
-                                }
-                                else
-                                {
-                                    <span>Summarize These Articles</span>
-                                }
-                            </button>
+            <div class="navigation-container" style="margin-top: 1.1em;">
+                @if (aiSummaryAvailable)
+                {
+                    @if (isGeneratingSummary)
+                    {
+                        <div class="summary-content selected">
+                            <span>🤖 Summarizing articles...</span>
                         </div>
-                        
-                        @if (!string.IsNullOrEmpty(currentPageSummary))
-                        {
-                            <div class="summary-content">
-                                @((MarkupString)currentPageSummary)
-                            </div>
-                        }
-                        else if (summaryError != null)
-                        {
-                            <div class="summary-error">
-                                <p>⚠️ Error generating summary: @summaryError</p>
-                            </div>
-                        }
-                    </div>
-                </div>
-            }
-
+                    }
+                    else if (!string.IsNullOrEmpty(currentPageSummary))
+                    {
+                        <div class="summary-content">
+                            @((MarkupString)currentPageSummary)
+                        </div>
+                    }
+                    else if (summaryError != null)
+                    {
+                        <div class="summary-error">
+                            <p>⚠️ Error generating summary: @summaryError</p>
+                        </div>
+                    }
+                }
+            </div>
             <div class="navigation-container">
-
                 <div class="feeds-grid">
                     @foreach (var entry in CurrentPageEntries)
                     {
@@ -73,8 +63,8 @@
                     }
                 </div>
 
-                <FeedNavigationBar HomeViewModel="viewModel" 
-                                   PageChanged="OnPageChangedAsync" 
+                <FeedNavigationBar HomeViewModel="viewModel"
+                                   PageChanged="OnPageChangedAsync"
                                    ShowKeyboardHelpRequested="ShowKeyboardHelp" />
             </div>
         }
@@ -85,19 +75,19 @@
                         Message="You haven't subscribed to any feeds yet or there are no posts to display."
                         ActionIcon="➕"
                         ActionText="Add Feeds"
-                        OnRefresh='EventCallback.Factory.Create(this, ShowAddFeedDialog)'/>
+                        OnRefresh='EventCallback.Factory.Create(this, ShowAddFeedDialog)' />
         }
     </div>
 </div>
 
 <!-- Add Feed Dialog -->
-<AddFeedDialog IsVisible="isAddFeedDialogVisible" 
-               OnClose="HideAddFeedDialog" 
+<AddFeedDialog IsVisible="isAddFeedDialogVisible"
+               OnClose="HideAddFeedDialog"
                OnAddFeed="HandleAddFeedSubmit"
                FeedManagementService="FeedManagementService" />
 
 <!-- Keyboard Help Dialog -->
-<KeyboardHelp IsVisible="isKeyboardHelpVisible" 
+<KeyboardHelp IsVisible="isKeyboardHelpVisible"
               OnClose="HideKeyboardHelp" />
 
 <script src="js/home.js"></script>
