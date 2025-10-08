@@ -4,6 +4,7 @@ using ReadR.Frontend.Models;
 using ReadR.Frontend.Services;
 using ReadR.Frontend.ViewModels;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace ReadR.Frontend.Components.Pages;
 
@@ -39,6 +40,7 @@ public partial class Home : ComponentBase, IDisposable
     [Inject] private IMarkdownService MarkdownService { get; set; } = default!;
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
     [Inject] private ILogger<Home> Logger { get; set; } = default!;
+    [Inject] private IConfiguration Configuration { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -46,16 +48,17 @@ public partial class Home : ComponentBase, IDisposable
         await CheckAiAvailabilityAsync();
     }
 
-    private async Task CheckAiAvailabilityAsync()
+    private Task CheckAiAvailabilityAsync()
     {
         try
         {
             Logger.LogInformation("Checking AI service availability");
-            
-            // Use the enhanced availability check from ChatService
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            aiSummaryAvailable = true;
-            
+
+            // Check for required AI config values
+            var endpoint = Configuration["AZURE_OPENAI_ENDPOINT"];
+            var modelName = Configuration["AZURE_OPENAI_MODEL_NAME"];
+            aiSummaryAvailable = !string.IsNullOrWhiteSpace(endpoint) && !string.IsNullOrWhiteSpace(modelName);
+
             Logger.LogInformation("AI service availability check completed: {Available}", aiSummaryAvailable);
         }
         catch (Exception ex)
@@ -63,6 +66,8 @@ public partial class Home : ComponentBase, IDisposable
             Logger.LogWarning(ex, "AI service is not available, disabling summary feature");
             aiSummaryAvailable = false;
         }
+
+        return Task.CompletedTask;
     }
 
     private async Task GenerateCurrentPageSummary()

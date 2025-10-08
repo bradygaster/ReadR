@@ -1,13 +1,2 @@
-using the azure mcp tools, can you tell me which of my azure subscriptions is active? It should be the one with my name in it
+Use the Azure MCP Tools (invoke best-practices first) to find the one Azure AI Foundry resource in my active subscription. If there's no active Azure subscription, pick the one with my name in it and show me the name of the subscription, but please do not print my subscription id. For the selected resource, return a JSON array entry with: { "subscriptionName", "resourceName", "resourceGroup", "location", "openaiFriendlyEndpoint", "models": [ { "modelName", "deploymentName" } ] }. After listing results, ask for confirmation before running `dotnet user-secrets` in project `ReadR.Frontend` to set `AZURE_OPENAI_ENDPOINT` to the OpenAI-friendly endpoint and `AZURE_OPENAI_MODEL_NAME` to my `gpt-4o` deployment. Do not set secrets or print the subscription id without my confirmation.
 
-can you use the azure mcp tools again to see if that subscription has any ai foundry resources in it?
-
-can you use `dotnet user-secrets` to set the AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_MODEL_NAME configuration settings so my code can use that foundry instance? i'll want to use the gpt-4o deployment i have in it. make sure to use the "OpenAI-friendly" AI Foundry endpoint, not the base endpoint for the project.
-
-
-
-## These two together seem to get it 
-
-Find the Azure AI Foundry resource in my subscription and tell me its name. Then, list all models deployed in that resource.
-
-Use `dotnet user-secrets` to set the `AZURE_OPENAI_ENDPOINT` to the "OpenAI-friendly" AI Foundry endpoint. Set `AZURE_OPENAI_MODEL_NAME` to the gpt-4o deployment I have in it. 
