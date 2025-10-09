@@ -32,8 +32,4 @@
     </Content>
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ReadR.ServiceDefaults\ReadR.ServiceDefaults.csproj" />
-  </ItemGroup>
-
 </Project>
