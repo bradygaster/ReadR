@@ -1,4 +1,4 @@
-name: Build and deploy .NET Core application to Web App readr-dev-github
+name: Build and deploy ReadR using GitHub Actions
 on:
   workflow_dispatch:
 permissions:
