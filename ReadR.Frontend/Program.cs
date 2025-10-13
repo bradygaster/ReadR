@@ -4,6 +4,8 @@ using ReadR.Shared.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 // Add memory cache
@@ -50,6 +52,8 @@ builder.Services.AddApplicationInsightsTelemetry(new Microsoft.ApplicationInsigh
 });
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 if (!app.Environment.IsDevelopment())
 {
