@@ -3,5 +3,7 @@
     <File Path="prompts.md" />
     <File Path="README.md" />
   </Folder>
+  <Project Path="ReadR.AppHost/ReadR.AppHost.csproj" />
   <Project Path="ReadR.Frontend/ReadR.Frontend.csproj" />
+  <Project Path="ReadR.ServiceDefaults/ReadR.ServiceDefaults.csproj" />
 </Solution>
