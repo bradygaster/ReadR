@@ -18,7 +18,6 @@ builder.Services.AddHttpClient<FeedParser>(client =>
 
 // Register unified feed management service (replaces both IFeedSource and IFeedManagementService)
 builder.Services.AddScoped<IFeedManagementService, FileFeedService>();
-// builder.Services.AddScoped<IFeedManagementService, AzureBlobFeedService>();
 
 // Register feed parser service
 builder.Services.AddScoped<IFeedParser, FeedParser>();
