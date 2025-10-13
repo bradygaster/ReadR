@@ -14,8 +14,9 @@ public static class IHostApplicationBuilderExtensions
             // Validate configuration first
             var endpointValue = builder.Configuration["AZURE_OPENAI_ENDPOINT"];
 
-            // i know this is dirty and gross. we'll make it better. 
-            endpointValue = endpointValue!.Replace("cognitiveservices", "openai");
+            // i know this is dirty and gross. we'll make it better.
+            if (endpointValue != null)
+                endpointValue = endpointValue!.Replace("cognitiveservices", "openai");
 
 
             if (string.IsNullOrWhiteSpace(endpointValue))
