@@ -4,9 +4,10 @@ using Azure.Provisioning.Storage;
 var builder = DistributedApplication.CreateBuilder(args);
 
 // Since we may have an existing foundry instance
-var existingFoundryName = builder.AddParameter("existingFoundryName");
-var existingFoundryResourceGroup = builder.AddParameter("existingFoundryResourceGroup");
-var model = builder.AddParameter("model", "gpt-4o", true, false);
+//var existingFoundryName = builder.AddParameter("existingFoundryName", "foundry-27gfqqfksu3km");
+//var existingFoundryResourceGroup = builder.AddParameter("existingFoundryResourceGroup", "readr10132025001");
+var modelName = "gpt-4.1";
+var model = builder.AddParameter("model", modelName, true, false);
 
 // Add the Application Insights telemetry
 var readrinsights = builder.AddAzureApplicationInsights("readrinsights");
@@ -19,8 +20,8 @@ var storage = builder.AddAzureStorage("readrstorage").RunAsEmulator();
 var readrblobs = storage.AddBlobs("readrblobs");
 
 // ai foundry
-//var foundry = builder.AddAzureAIFoundry("foundry").AsExisting(existingFoundryName, existingFoundryResourceGroup);
-//var gpt4 = foundry.AddDeployment("gpt-4o", AIFoundryModel.OpenAI.Gpt4);
+var foundry = builder.AddAzureAIFoundry("foundry");//.AsExisting(existingFoundryName, existingFoundryResourceGroup);
+var gpt4 = foundry.AddDeployment(modelName, AIFoundryModel.OpenAI.Gpt41);
 
 // front end project
 var frontend = builder.AddProject<Projects.ReadR_Frontend>("frontend")
@@ -29,9 +30,9 @@ var frontend = builder.AddProject<Projects.ReadR_Frontend>("frontend")
                       .WithReference(readrblobs)
                       .WithEnvironment("readrblobs__blobServiceUri", readrblobs)
                       .WithReference(readrinsights)
-                      //.WithEnvironment("AZURE_OPENAI_ENDPOINT", foundry.Resource.AIFoundryApiEndpoint)
-                      //.WithEnvironment("AZURE_OPENAI_MODEL_NAME", model)
-                      //.WaitFor(gpt4)
+                      .WithEnvironment("AZURE_OPENAI_ENDPOINT", foundry.Resource.Endpoint)
+                      .WithEnvironment("AZURE_OPENAI_MODEL_NAME", model)
+                      .WaitFor(foundry)
                       .WithRoleAssignments(storage,
                            StorageBuiltInRole.StorageBlobDataOwner,
                            StorageBuiltInRole.StorageQueueDataContributor,
