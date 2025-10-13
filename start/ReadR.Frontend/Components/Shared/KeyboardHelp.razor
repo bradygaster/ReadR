@@ -1,0 +1,72 @@
+@if (IsVisible)
+{
+    <div class="keyboard-help-overlay" @onclick="Close">
+        <div class="keyboard-help-dialog" @onclick:stopPropagation="true">
+            <div class="keyboard-help-header">
+                <h3>⌨️ Keyboard Navigation</h3>
+                <button class="btn btn-secondary btn-sm" @onclick="Close">
+                    <span>✕</span>
+                </button>
+            </div>
+            
+            <div class="keyboard-help-content">
+                <div class="keyboard-help-section">
+                    <h4>Grid Navigation</h4>
+                    <div class="keyboard-shortcuts">
+                        <div class="shortcut-item">
+                            <kbd>A</kbd> or <kbd>←</kbd>
+                            <span>Move left (or previous page at edge)</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <kbd>D</kbd> or <kbd>→</kbd>
+                            <span>Move right (or next page at edge)</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <kbd>W</kbd> or <kbd>↑</kbd>
+                            <span>Move up</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <kbd>S</kbd> or <kbd>↓</kbd>
+                            <span>Move down</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="keyboard-help-section">
+                    <h4>Actions</h4>
+                    <div class="keyboard-shortcuts">
+                        <div class="shortcut-item">
+                            <kbd>Enter</kbd> or <kbd>Space</kbd>
+                            <span>Open selected article</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <kbd>Esc</kbd>
+                            <span>Close dialogs</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <kbd>?</kbd>
+                            <span>Show/hide this help</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="keyboard-help-footer">
+                <p class="help-note">
+                    <span class="help-icon">💡</span>
+                    Navigate to the edges to automatically switch pages!
+                </p>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+}

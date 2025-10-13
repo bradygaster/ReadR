@@ -1,0 +1,146 @@
+@inject IJSRuntime JSRuntime
+@using Microsoft.AspNetCore.Components.Web
+
+@if (IsVisible)
+{
+    <div class="modal-overlay">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Feed</h3>
+                <button type="button" class="modal-close" @onclick="CloseDialog" aria-label="Close dialog">
+                    <span class="close-icon">×</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="feed-url" class="form-label">RSS/Atom Feed URL</label>
+                    <input type="url" 
+                           id="feed-url" 
+                           class="form-control" 
+                           placeholder="https://example.com/feed.xml" 
+                           @bind="FeedUrl" 
+                           @onkeydown="HandleKeyDown"
+                           disabled="@IsLoading" />
+                    <div class="form-hint">
+                        Enter the URL of an RSS or Atom feed you'd like to subscribe to
+                    </div>
+                    
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="error-message">
+                            <span class="error-icon">⚠️</span>
+                            @ErrorMessage
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="CloseDialog" disabled="@IsLoading">
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-primary" @onclick="HandleAddFeed" disabled="@(IsLoading || string.IsNullOrWhiteSpace(FeedUrl))">
+                    @if (IsLoading)
+                    {
+                        <span class="spinner"></span>
+                        <span>@LoadingMessage</span>
+                    }
+                    else
+                    {
+                        <span class="btn-icon">➕</span>
+                        <span>Add Feed</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<string> OnAddFeed { get; set; }
+    [Parameter] public IFeedManagementService? FeedManagementService { get; set; }
+    
+    private string FeedUrl { get; set; } = "";
+    private string ErrorMessage { get; set; } = "";
+    private bool IsLoading { get; set; }
+    private string LoadingMessage { get; set; } = "Adding...";
+    
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            await CloseDialog();
+        }
+        else if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(FeedUrl) && !IsLoading)
+        {
+            await HandleAddFeed();
+        }
+    }
+    
+    private async Task HandleAddFeed()
+    {
+        if (string.IsNullOrWhiteSpace(FeedUrl))
+            return;
+            
+        ErrorMessage = "";
+        IsLoading = true;
+        LoadingMessage = "Adding feed...";
+        StateHasChanged();
+        
+        try
+        {
+            await OnAddFeed.InvokeAsync(FeedUrl.Trim());
+            // Note: The parent component will close the dialog on success
+            // If we get here and dialog is still open, it means there was an error
+            await Task.Delay(100); // Small delay to allow parent to close dialog
+            
+            // If dialog is still visible after delay, reset loading state
+            if (IsVisible)
+            {
+                IsLoading = false;
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to add feed: {ex.Message}";
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+    
+    private async Task CloseDialog()
+    {
+        // Always reset state when closing
+        FeedUrl = "";
+        ErrorMessage = "";
+        IsLoading = false;
+        await OnClose.InvokeAsync();
+    }
+
+    // Reset state when dialog visibility changes
+    protected override void OnParametersSet()
+    {
+        if (!IsVisible && (IsLoading || !string.IsNullOrEmpty(ErrorMessage)))
+        {
+            // Dialog was closed externally (e.g., by parent after successful add)
+            // Reset all state
+            FeedUrl = "";
+            ErrorMessage = "";
+            IsLoading = false;
+            LoadingMessage = "Adding...";
+            StateHasChanged();
+        }
+        else if (IsVisible && string.IsNullOrEmpty(FeedUrl))
+        {
+            // Dialog just opened - ensure clean state
+            FeedUrl = "";
+            ErrorMessage = "";
+            IsLoading = false;
+            LoadingMessage = "Adding...";
+        }
+    }
+}

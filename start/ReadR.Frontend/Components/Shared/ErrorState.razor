@@ -1,0 +1,23 @@
+<div class="error-container">
+    <div class="alert alert-error">
+        <div class="alert-header">
+            <span class="alert-icon">⚠️</span>
+            <h4 class="alert-title">@Title</h4>
+        </div>
+        <p class="alert-message">@Message</p>
+        @if (OnRetry.HasDelegate)
+        {
+            <button class="btn btn-secondary" @onclick="OnRetry">
+                <span>🔄</span>
+                @RetryButtonText
+            </button>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Something went wrong";
+    [Parameter] public string Message { get; set; } = "An error occurred.";
+    [Parameter] public string RetryButtonText { get; set; } = "Try Again";
+    [Parameter] public EventCallback OnRetry { get; set; }
+}

@@ -1,0 +1,31 @@
+<div class="navigation-header">
+
+    <PreviousButton HomeViewModel="HomeViewModel" PageChanged="(indx) => PageChanged.InvokeAsync(indx)" />
+
+    <div class="navigation-center">
+        <EntryCounter HomeViewModel="HomeViewModel" />
+        <button class="btn btn-secondary btn-sm keyboard-help-trigger" @onclick="ShowKeyboardHelp" title="Keyboard shortcuts">
+            <span>⌨️</span>
+        </button>
+    </div>
+
+    <NextButton HomeViewModel="HomeViewModel" PageChanged="(indx) => PageChanged.InvokeAsync(indx)" />
+    
+</div>
+
+@code
+{
+    [Parameter]
+    public EventCallback<int> PageChanged { get; set; }
+
+    [Parameter]
+    public ViewModels.HomeViewModel HomeViewModel { get; set; } = new();
+    
+    [Parameter]
+    public EventCallback ShowKeyboardHelpRequested { get; set; }
+    
+    private async Task ShowKeyboardHelp()
+    {
+        await ShowKeyboardHelpRequested.InvokeAsync();
+    }
+}

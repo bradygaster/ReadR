@@ -1,0 +1,23 @@
+<button class="btn btn-secondary nav-btn" @onclick="PreviousPage" disabled="@(HomeViewModel.CurrentPage == 0)">
+    <span>←</span>
+    Previous
+</button>
+
+@code
+{
+    [Parameter]
+    public EventCallback<int> PageChanged { get; set; }
+
+    [Parameter]
+    public ViewModels.HomeViewModel HomeViewModel { get; set; } = new();
+
+    private Task PreviousPage()
+    {
+        if (HomeViewModel.CurrentPage > 0)
+        {
+            var target = HomeViewModel.CurrentPage - 1;
+            return PageChanged.InvokeAsync(target);
+        }
+        return Task.CompletedTask;
+    }
+}

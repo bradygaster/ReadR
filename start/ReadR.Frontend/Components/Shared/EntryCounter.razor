@@ -1,0 +1,15 @@
+<div class="entry-counter @(ShowKeyboardIndicator ? "keyboard-active" : "")">
+    <span class="counter-icon">📄</span>
+    <span class="current-entry">@(HomeViewModel.CurrentPage + 1)</span>
+    <span class="separator">of</span>
+    <span class="total-entries">@HomeViewModel.TotalPages</span>
+    <span class="page-label">PAGES</span>
+</div>
+
+@code {
+    [Parameter]
+    public ViewModels.HomeViewModel HomeViewModel { get; set; } = new();
+    
+    [Parameter]
+    public bool ShowKeyboardIndicator { get; set; } = true;
+}

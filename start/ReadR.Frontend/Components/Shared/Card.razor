@@ -1,0 +1,114 @@
+@if(FeedEntry != null)
+{
+    <article class="feed-card">
+        <div class="date-tag">
+            <span class="date-month">@FeedEntry.PublishDate.ToString("MMM")</span>
+            <span class="date-day">@FeedEntry.PublishDate.Day</span>
+        </div>
+        <div class="card-body">
+            <h3 class="card-title">
+                <a href="@FeedEntry.Link" target="_blank" rel="noopener noreferrer">
+                    @FeedEntry.Title
+                </a>
+            </h3>
+
+            @if (!string.IsNullOrEmpty(FeedEntry.Description))
+            {
+                <p class="card-text">
+                    @(TruncateDescription(FeedEntry.Description, (FeedEntry.Title.Length > 38) ? 230 : 200))
+                </p>
+            }
+
+            <div class="card-footer">
+                <div class="source-tag">
+                    @if (!string.IsNullOrEmpty(FeedEntry.FaviconUrl))
+                    {
+                        <img src="@FeedEntry.FaviconUrl"
+                             alt="Site icon"
+                             class="site-favicon"
+                             data-domain="@ExtractDomain(FeedEntry.Link)"
+                             data-fallback-icon="@(!string.IsNullOrEmpty(FeedEntry.FallbackIcon) ? FeedEntry.FallbackIcon : "🌐")"
+                             onerror="handleFaviconError(this);" />
+                        <span class="site-icon" style="display: none;">@(!string.IsNullOrEmpty(FeedEntry.FallbackIcon) ? FeedEntry.FallbackIcon : "🌐")</span>
+                    }
+                    else if (!string.IsNullOrEmpty(FeedEntry.FallbackIcon))
+                    {
+                        <span class="site-icon">@FeedEntry.FallbackIcon</span>
+                    }
+                    else
+                    {
+                        <span class="site-icon">🌐</span>
+                    }
+                    <span>@FeedEntry.FeedDisplayName</span>
+                    @if (IsYouTubeEntry(FeedEntry))
+                    {
+                        <span class="platform-label">YouTube</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </article>
+}
+
+
+
+@code {
+
+    [Parameter]
+    public FeedEntry? FeedEntry { get; set; } = null;
+
+    // Utility methods kept for display
+    private static string TruncateDescription(string description, int maxLength)
+    {
+        if (string.IsNullOrEmpty(description))
+            return description;
+
+        // Remove HTML tags for display
+        var plainText = System.Text.RegularExpressions.Regex.Replace(description, "<.*?>", "");
+
+        if (plainText.Length <= maxLength)
+            return plainText;
+
+        // Fallback to original truncation logic respecting word boundary and ellipsis
+        var truncated = plainText.Substring(0, maxLength);
+        var lastSpace = truncated.LastIndexOf(' ');
+
+        if (lastSpace > 0)
+            truncated = truncated.Substring(0, lastSpace);
+
+        return truncated + "...";
+    }
+
+    private static bool IsYouTubeEntry(FeedEntry entry)
+    {
+        if (!string.IsNullOrEmpty(entry.Link))
+        {
+            return entry.Link.Contains("youtube.com", StringComparison.OrdinalIgnoreCase) ||
+                   entry.Link.Contains("youtu.be", StringComparison.OrdinalIgnoreCase);
+        }
+        return false;
+    }
+
+    private static string ExtractDomain(string url)
+    {
+        if (string.IsNullOrEmpty(url))
+            return "";
+
+        try
+        {
+            var uri = new Uri(url);
+            var host = uri.Host.ToLowerInvariant();
+
+            // Remove www. prefix
+            if (host.StartsWith("www."))
+                host = host[4..];
+
+            return host;
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
+}

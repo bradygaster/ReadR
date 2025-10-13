@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "ReadR.Serverless": {
-      "commandName": "Project",
-      "commandLineArgs": "--port 7281",
-      "launchBrowser": false
-    }
-  }
-}
