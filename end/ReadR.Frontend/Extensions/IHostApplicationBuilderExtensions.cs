@@ -14,8 +14,9 @@ public static class IHostApplicationBuilderExtensions
             // Validate configuration first
             var endpointValue = builder.Configuration["AZURE_OPENAI_ENDPOINT"];
 
-            // i know this is dirty and gross. we'll make it better. 
-            endpointValue = endpointValue.Replace("cognitiveservices", "openai");
+            // i know this is dirty and gross. we'll make it better.
+            if (endpointValue != null)
+                endpointValue = endpointValue.Replace("cognitiveservices", "openai");
 
 
             if (string.IsNullOrWhiteSpace(endpointValue))
@@ -83,16 +84,16 @@ public class NullChatClient : IChatClient
     public ChatClientMetadata Metadata { get; } = new("null-client", null, "Null Chat Client");
 
     public Task<ChatResponse> GetResponseAsync(
-        IEnumerable<ChatMessage> chatMessages, 
-        ChatOptions? options = null, 
+        IEnumerable<ChatMessage> chatMessages,
+        ChatOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         throw new InvalidOperationException("AI service is not available. Please check your configuration.");
     }
 
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IEnumerable<ChatMessage> chatMessages, 
-        ChatOptions? options = null, 
+        IEnumerable<ChatMessage> chatMessages,
+        ChatOptions? options = null,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Return empty enumerable instead of throwing to allow availability checks to work
