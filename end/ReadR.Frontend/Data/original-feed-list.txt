@@ -5,6 +5,7 @@ https://devblogs.microsoft.com/visualstudio/feed/
 # Aspire and Cloud Native
 https://azure.microsoft.com/en-us/blog/feed/
 https://aspireify.net/rss
+https://blog.safia.rocks/atom.xml
 
 # .NET MVPs and Experts
 https://www.hanselman.com/blog/feed/rss
