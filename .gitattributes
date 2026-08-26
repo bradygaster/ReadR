@@ -61,5 +61,3 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
-
-.github/workflows/*.lock.yml linguist-generated=true
