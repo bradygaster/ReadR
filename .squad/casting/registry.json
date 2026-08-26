@@ -1,0 +1,53 @@
+{
+  "agents": {
+    "mrwhite": {
+      "created_at": "2026-08-26T01:23:30Z",
+      "persistent_name": "Mr. White",
+      "universe": "Reservoir Dogs",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "mrorange": {
+      "created_at": "2026-08-26T01:23:30Z",
+      "persistent_name": "Mr. Orange",
+      "universe": "Reservoir Dogs",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "mrpink": {
+      "created_at": "2026-08-26T01:23:30Z",
+      "persistent_name": "Mr. Pink",
+      "universe": "Reservoir Dogs",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "mrblue": {
+      "created_at": "2026-08-26T01:23:30Z",
+      "persistent_name": "Mr. Blue",
+      "universe": "Reservoir Dogs",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "mrbrown": {
+      "created_at": "2026-08-26T01:23:30Z",
+      "persistent_name": "Mr. Brown",
+      "universe": "Reservoir Dogs",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "niceguyeddie": {
+      "created_at": "2026-08-26T01:23:30Z",
+      "persistent_name": "Nice Guy Eddie",
+      "universe": "Reservoir Dogs",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "joecabot": {
+      "created_at": "2026-08-26T01:23:30Z",
+      "persistent_name": "Joe Cabot",
+      "universe": "Reservoir Dogs",
+      "legacy_named": false,
+      "status": "active"
+    }
+  }
+}
